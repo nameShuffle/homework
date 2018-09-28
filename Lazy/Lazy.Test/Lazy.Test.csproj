@@ -61,18 +61,11 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="SimpleLazyTest.cs" />
+    <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProtectedLazyTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Lazy\Lazy\Lazy.csproj">
-      <Project>{502ae029-7202-4f8d-9c5a-f6f603b3be32}</Project>
-      <Name>Lazy</Name>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

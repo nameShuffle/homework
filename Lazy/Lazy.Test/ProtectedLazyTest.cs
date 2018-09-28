@@ -51,13 +51,13 @@ namespace Lazy.Test
             Assert.Equal(firstResult, secondResult);
         }
 
-        [Fact]
+        /*[Fact]
         public void GetTestWithThreads()
         {
             var threads = new Thread[10];
 
             var results = new int[10, 2];
 
-        }
+        }*/
     }
 }
