@@ -1,3 +1,2 @@
 environment:
-    matrix:
     -solution_name: homework/Lazy/Lazy.sln
