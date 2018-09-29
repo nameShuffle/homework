@@ -6,7 +6,7 @@ namespace Lazy
     {
         private Func<T> func;
         private T result;
-        private bool hasDecision;
+        private volatile bool hasDecision;
 
         private Object lockObject = new Object();
 
