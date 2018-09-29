@@ -9,14 +9,14 @@ namespace Lazy.Test
         [Fact]
         public void LazyNullTest()
         {
-            
-
-            var simpleLazy = LazyFactory.CreateSimpleLazy(() =>
+            bool? nullFunction()
             {
-                return 21;
-            });
+                return null;
+            }
 
-            Assert.Equal(21, simpleLazy.Get);
+            var simpleLazy = LazyFactory.CreateSimpleLazy(nullFunction);
+
+            Assert.Equal(null, simpleLazy.Get);
         }
 
         [Fact]
