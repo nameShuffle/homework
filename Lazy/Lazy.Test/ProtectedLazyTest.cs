@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using Xunit;
 
@@ -21,7 +20,7 @@ namespace Lazy.Test
         }
 
         [Fact]
-        public void NormalGetTest()
+        public void OrdinaryGetTest()
         {
             int function()
             {
@@ -51,13 +50,35 @@ namespace Lazy.Test
             Assert.Equal(firstResult, secondResult);
         }
 
-        /*[Fact]
+        [Fact]
         public void GetTestWithThreads()
         {
+            int randomFunction()
+            {
+                Random random = new Random();
+                int randomNumber = random.Next(0, 100);
+                return randomNumber;
+            }
+
+            var protectedLazy = LazyFactory.CreateProtectedLazy(randomFunction);
+
             var threads = new Thread[10];
+            var threadsResults = new int[10, 5];
 
-            var results = new int[10, 2];
+            for (int i = 0; i < 10; i++)
+            {
+                int threadNumber = i;
+                threads[i] = new Thread(() =>
+                {
+                    for (int j = 0; j < 5; j++)
+                        threadsResults[threadNumber, j] = protectedLazy.Get;
+                    Thread.Sleep(100);
+                });
+            }
 
-        }*/
+            for (int i = 0; i < 10; i++)
+                for (int j = 0; j < 5; j++)
+                    Assert.Equal(threadsResults[0, 0], threadsResults[i, j]);
+        }
     }
 }

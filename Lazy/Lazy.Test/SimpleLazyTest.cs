@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Xunit;
 
 namespace Lazy.Test
@@ -7,7 +6,7 @@ namespace Lazy.Test
     public class SimpleLazyTest
     {
         [Fact]
-        public void LazyNullTest()
+        public void NullFunctionTest()
         {
             bool? nullFunction()
             {
@@ -20,7 +19,7 @@ namespace Lazy.Test
         }
 
         [Fact]
-        public void LazyGetTest()
+        public void OrdinaryGetTest()
         {
             int function()
             {
