@@ -6,17 +6,16 @@ namespace Lazy.Test
 {
     public class ProtectedLazyTest
     {
+        private Random random = new Random();
+
         [Fact]
         public void NullFunctionTest()
         {
-            bool? nullFunction()
-            {
-                return null;
-            }
+            bool? nullFunction() => null;
 
             var protectedLazy = LazyFactory.CreateProtectedLazy(nullFunction);
 
-            Assert.Equal(null, protectedLazy.Get);
+            Assert.Null(protectedLazy.Get);
         }
 
         [Fact]
@@ -37,8 +36,7 @@ namespace Lazy.Test
         {
             int randomFunction()
             {
-                Random random = new Random();
-                int randomNumber = random.Next(0, 100);
+                int randomNumber = this.random.Next(0, 100);
                 return randomNumber;
             }
 
@@ -55,8 +53,7 @@ namespace Lazy.Test
         {
             int randomFunction()
             {
-                Random random = new Random();
-                int randomNumber = random.Next(0, 100);
+                int randomNumber = this.random.Next(0, 100);
                 return randomNumber;
             }
 
@@ -76,9 +73,21 @@ namespace Lazy.Test
                 });
             }
 
+            foreach (var thread in threads)
+            {
+                thread.Start();
+            }
+
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
+
             for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 5; j++)
+                {
                     Assert.Equal(threadsResults[0, 0], threadsResults[i, j]);
+                }
         }
     }
 }

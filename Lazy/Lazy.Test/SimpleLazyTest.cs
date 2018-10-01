@@ -5,17 +5,16 @@ namespace Lazy.Test
 {
     public class SimpleLazyTest
     {
+        private Random random = new Random();
+
         [Fact]
         public void NullFunctionTest()
         {
-            bool? nullFunction()
-            {
-                return null;
-            }
+            bool? nullFunction() => null;
 
             var simpleLazy = LazyFactory.CreateSimpleLazy(nullFunction);
 
-            Assert.Equal(null, simpleLazy.Get);
+            Assert.Null(simpleLazy.Get);
         }
 
         [Fact]
@@ -36,7 +35,6 @@ namespace Lazy.Test
         {
             int randomFunction()
             {
-                Random random = new Random();
                 int randomNumber = random.Next(0, 100);
                 return randomNumber;
             }
