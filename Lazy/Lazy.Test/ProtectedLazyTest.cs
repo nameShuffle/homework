@@ -21,10 +21,7 @@ namespace Lazy.Test
         [Fact]
         public void OrdinaryGetTest()
         {
-            int function()
-            {
-                return 21;
-            }
+            int function() => 21;
 
             var protectedLazy = LazyFactory.CreateProtectedLazy(function);
 
@@ -34,11 +31,7 @@ namespace Lazy.Test
         [Fact]
         public void SecondCalculatingTest()
         {
-            int randomFunction()
-            {
-                int randomNumber = this.random.Next(0, 100);
-                return randomNumber;
-            }
+            int randomFunction() => this.random.Next(0, 100);
 
             var protectedLazy = LazyFactory.CreateProtectedLazy(randomFunction);
 
@@ -51,11 +44,7 @@ namespace Lazy.Test
         [Fact]
         public void GetTestWithThreads()
         {
-            int randomFunction()
-            {
-                int randomNumber = this.random.Next(0, 100);
-                return randomNumber;
-            }
+            int randomFunction() => this.random.Next(0, 100);
 
             var protectedLazy = LazyFactory.CreateProtectedLazy(randomFunction);
 
