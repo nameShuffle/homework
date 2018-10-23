@@ -17,6 +17,8 @@ namespace MyThreadPool
         private Thread[] threads;
         private Queue<Action> tasks;
 
+        private Object lockObject = new Object();
+
         /// <summary>
         /// Конструктор класса создает указанное количество потоков,
         /// потоки сразу же запускаются и переходят в режим ожидания
@@ -30,8 +32,10 @@ namespace MyThreadPool
 
             for (int i = 0; i < threadsNumber; i++)
             {
-                threads[i] = new Thread(Working);
-                threads[i].IsBackground = true;
+                threads[i] = new Thread(Working)
+                {
+                    IsBackground = true
+                };
             }
             foreach (var thread in threads)
             {
@@ -48,10 +52,14 @@ namespace MyThreadPool
         {
             while (true)
             {
-                if (tasks.Count == 0)
-                    continue;
-                var freeTask = tasks.Dequeue();
-                freeTask();
+                lock(this.lockObject)
+                {
+                    if (tasks.Count != 0)
+                    {
+                        var freeTask = tasks.Dequeue();
+                        freeTask();
+                    }
+                } 
             }
         }
 
@@ -72,8 +80,11 @@ namespace MyThreadPool
         public MyTask<TResult> AddTask<TResult> (Func<TResult> func)
         {
             var newTask = new MyTask<TResult>(func, ref tasks);
-            this.tasks.Enqueue(newTask.start);
-            return newTask;
+            lock(this.lockObject)
+            {
+                this.tasks.Enqueue(newTask.start);
+                return newTask;
+            }
         }
 
     }

@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="IMyTask.cs" />
     <Compile Include="MyTask.cs" />
+    <Compile Include="MyTaskWithArgs.cs" />
     <Compile Include="MyThreadPool.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
