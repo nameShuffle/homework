@@ -5,14 +5,15 @@ using System.Text;
 
 namespace MyThreadPool
 {
-    class MyTaskWithArgs<TResult, TNewResult> : IMyTask<TNewResult>
+    public class MyTaskWithArgs<TResult, TNewResult> : IMyTask<TNewResult>
     {
         private Func<TResult, TNewResult> task;
         private bool isCompleted;
         private TNewResult result;
-        
+
+        private MyTask<TResult> owner;
+
         public Action start;
-        public MyTask<TResult> owner;
 
         /// <summary>
         /// Конструктор класса задач с аргументами, инициализует значения для дальнейшей работы

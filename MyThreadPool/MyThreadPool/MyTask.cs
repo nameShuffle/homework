@@ -13,7 +13,7 @@ namespace MyThreadPool
     /// зависит от результат начальной функции.
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    class MyTask<TResult>: IMyTask<TResult>
+    public class MyTask<TResult>: IMyTask<TResult>
     {
         private Func<TResult> task;
         private bool isCompleted;
@@ -23,7 +23,12 @@ namespace MyThreadPool
 
         private Object lockObject = new Object();
 
+        private bool error;
+        private Exception exception;
+
         public Action start;
+
+
         
         /// <summary>
         /// Конструктор класса задач без аргументов, инициализует значения для дальнейшей работы
@@ -41,6 +46,7 @@ namespace MyThreadPool
             this.start = Start;
             this.poolQueue = poolQueue;
             this.continueQueue = new Queue<Action>();
+            this.error = false;
         }
 
         /// <summary>
@@ -49,13 +55,25 @@ namespace MyThreadPool
         /// </summary>
         public void Start()
         {
-            this.result = this.task();
+            try
+            {
+                this.result = this.task();
+            }
+            catch (Exception e)
+            {
+                this.error = true;
+                this.exception = e;
+            }
+            
             this.isCompleted = true;
 
             while(continueQueue.Count != 0)
             {
                 Action continueTask = continueQueue.Dequeue();
-                this.poolQueue.Enqueue(continueTask);
+                lock (this.lockObject)
+                {
+                    this.poolQueue.Enqueue(continueTask);
+                }
             }
         }
         
@@ -82,7 +100,16 @@ namespace MyThreadPool
                 while (true)
                 {
                     if (isCompleted)
-                        return this.result;
+                    {
+                        if (error)
+                        {
+                            Console.WriteLine(exception.Message);
+                            throw new AggregateException(exception);
+                        }
+                            
+                        else
+                            return this.result;
+                    }                  
                 }
             }
         }
@@ -97,11 +124,17 @@ namespace MyThreadPool
         public MyTaskWithArgs<TResult, TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
         {
             MyTaskWithArgs<TResult, TNewResult> continueTask = new MyTaskWithArgs<TResult, TNewResult>(func, this);
-            lock(this.lockObject)
+
+            if (this.IsCompleted)
             {
-                this.continueQueue.Enqueue(continueTask.start);
+                lock(lockObject)
+                {
+                    this.poolQueue.Enqueue(continueTask.start);
+                }
             }
-            
+            else
+                this.continueQueue.Enqueue(continueTask.start);
+
             return continueTask;
         }
     }

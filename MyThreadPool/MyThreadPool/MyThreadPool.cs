@@ -11,13 +11,15 @@ namespace MyThreadPool
     /// потоков. Потоки либо выполняют переданную задачу, либо
     /// находятся в режиме ожидания, если свободных задач нет.
     /// </summary>
-    class MyThreadPool
+    public class MyThreadPool
     {
         private int threadsNumber;
         private Thread[] threads;
         private Queue<Action> tasks;
 
         private Object lockObject = new Object();
+        CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+        private CancellationToken token;
 
         /// <summary>
         /// Конструктор класса создает указанное количество потоков,
@@ -29,6 +31,7 @@ namespace MyThreadPool
             this.threads = new Thread[n];
             this.threadsNumber = n;
             this.tasks = new Queue<Action>();
+            this.token = cancelTokenSource.Token;
 
             for (int i = 0; i < threadsNumber; i++)
             {
@@ -50,16 +53,30 @@ namespace MyThreadPool
         /// </summary>
         private void Working()
         {
+            Action freeTask;
+            bool newTask = false;
             while (true)
             {
                 lock(this.lockObject)
                 {
                     if (tasks.Count != 0)
                     {
-                        var freeTask = tasks.Dequeue();
-                        freeTask();
+                        freeTask = tasks.Dequeue();
+                        newTask = true;
                     }
-                } 
+                    else
+                        freeTask = null;
+                }
+                if(newTask)
+                {
+                    freeTask();
+                    newTask = false;
+                }
+                if (this.token.IsCancellationRequested)
+                {
+                    Console.WriteLine("Поток завершен.");
+                    return;
+                }
             }
         }
 
@@ -87,5 +104,21 @@ namespace MyThreadPool
             }
         }
 
+        public int threadsCount()
+        {
+            var count = 0;
+            foreach (var thread in this.threads)
+            {
+                if (thread.IsAlive)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public void Shutdown()
+        {
+            cancelTokenSource.Cancel();
+        }
     }
 }
