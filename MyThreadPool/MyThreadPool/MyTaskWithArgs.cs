@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MyThreadPool
 {
@@ -11,7 +8,10 @@ namespace MyThreadPool
         private bool isCompleted;
         private TNewResult result;
 
-        private MyTask<TResult> owner;
+        private bool error;
+        private Exception exception;
+
+        private TResult ownerResult;
 
         public Action start;
 
@@ -27,8 +27,9 @@ namespace MyThreadPool
         {
             this.task = func;
             this.isCompleted = false;
+            this.ownerResult = owner.Result;
             this.start = Start;
-            this.owner = owner;
+            this.error = false;
         }
 
         /// <summary>
@@ -37,7 +38,16 @@ namespace MyThreadPool
         /// </summary>
         public void Start()
         {
-            this.result = this.task(owner.Result);
+            try
+            {
+                this.result = this.task(ownerResult);
+            }
+            catch (Exception e)
+            {
+                this.error = true;
+                this.exception = e;
+            }
+
             this.isCompleted = true;
         }
 
@@ -64,7 +74,14 @@ namespace MyThreadPool
                 while (true)
                 {
                     if (isCompleted)
-                        return this.result;
+                    {
+                        if (error)
+                        {
+                            throw new AggregateException(exception);
+                        }
+                        else
+                            return this.result;
+                    }
                 }
             }
         }

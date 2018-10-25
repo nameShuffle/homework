@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace MyThreadPool
@@ -53,19 +51,20 @@ namespace MyThreadPool
         /// </summary>
         private void Working()
         {
-            Action freeTask;
+            Action freeTask = null;
             bool newTask = false;
             while (true)
             {
-                lock(this.lockObject)
+                if (tasks.Count != 0)
                 {
-                    if (tasks.Count != 0)
+                    lock (this.lockObject)
                     {
-                        freeTask = tasks.Dequeue();
-                        newTask = true;
+                        if (tasks.Count != 0)
+                        {
+                            freeTask = tasks.Dequeue();
+                            newTask = true;
+                        }
                     }
-                    else
-                        freeTask = null;
                 }
                 if(newTask)
                 {
@@ -73,10 +72,7 @@ namespace MyThreadPool
                     newTask = false;
                 }
                 if (this.token.IsCancellationRequested)
-                {
-                    Console.WriteLine("Поток завершен.");
                     return;
-                }
             }
         }
 
@@ -104,7 +100,10 @@ namespace MyThreadPool
             }
         }
 
-        public int threadsCount()
+        /// <summary>
+        /// Функция, возвращающая количество работающих потоков в пуле.
+        /// </summary>
+        public int ThreadsCount()
         {
             var count = 0;
             foreach (var thread in this.threads)
@@ -116,6 +115,9 @@ namespace MyThreadPool
             return count;
         }
 
+        /// <summary>
+        /// Завершает работу всех потоков в пуле, как только они завершили вычисления.
+        /// </summary>
         public void Shutdown()
         {
             cancelTokenSource.Cancel();

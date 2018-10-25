@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using Xunit;
-using MyThreadPool;
 using System.Threading;
 
 namespace MyThreadPool.Test
@@ -36,7 +34,7 @@ namespace MyThreadPool.Test
         public void ThreadNumberTest()
         {
             MyThreadPool pool = new MyThreadPool(5);
-            Assert.Equal(5, pool.threadsCount());
+            Assert.Equal(5, pool.ThreadsCount());
         }
 
         [Fact]
@@ -119,10 +117,9 @@ namespace MyThreadPool.Test
             MyThreadPool pool = new MyThreadPool(4);
             var task = pool.AddTask(BasicFunc);
             pool.Shutdown();
-            Thread.Sleep(500);
 
             Assert.Equal(10, task.Result);
-            Assert.Equal(0, pool.threadsCount());
+            Assert.Equal(0, pool.ThreadsCount());
         }
 
         [Fact]
@@ -138,13 +135,16 @@ namespace MyThreadPool.Test
 
             MyThreadPool pool = new MyThreadPool(5);
             var task = pool.AddTask(del);
+
+            Assert.Throws<AggregateException>(()=>task.Result);
             try
             {
                 var result = task.Result;
             }
-            catch(Exception e)
+            catch(AggregateException e)
             {
-                Assert.NotNull(e);
+                foreach (var ex in e.InnerExceptions)
+                    Assert.ThrowsAsync<DivideByZeroException>(() => throw ex);
             }
         }
         

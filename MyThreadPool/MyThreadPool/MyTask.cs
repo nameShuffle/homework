@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MyThreadPool
 {
@@ -16,7 +14,7 @@ namespace MyThreadPool
     public class MyTask<TResult>: IMyTask<TResult>
     {
         private Func<TResult> task;
-        private bool isCompleted;
+        private volatile bool isCompleted;
         private TResult result;
         private Queue<Action> poolQueue;
         private Queue<Action> continueQueue;
@@ -28,8 +26,6 @@ namespace MyThreadPool
 
         public Action start;
 
-
-        
         /// <summary>
         /// Конструктор класса задач без аргументов, инициализует значения для дальнейшей работы
         /// с задачей.
@@ -69,9 +65,9 @@ namespace MyThreadPool
 
             while(continueQueue.Count != 0)
             {
-                Action continueTask = continueQueue.Dequeue();
                 lock (this.lockObject)
                 {
+                    Action continueTask = continueQueue.Dequeue();
                     this.poolQueue.Enqueue(continueTask);
                 }
             }
@@ -103,10 +99,8 @@ namespace MyThreadPool
                     {
                         if (error)
                         {
-                            Console.WriteLine(exception.Message);
                             throw new AggregateException(exception);
-                        }
-                            
+                        }   
                         else
                             return this.result;
                     }                  
@@ -124,16 +118,19 @@ namespace MyThreadPool
         public MyTaskWithArgs<TResult, TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
         {
             MyTaskWithArgs<TResult, TNewResult> continueTask = new MyTaskWithArgs<TResult, TNewResult>(func, this);
-
+            
             if (this.IsCompleted)
             {
-                lock(lockObject)
+                lock (lockObject)
                 {
                     this.poolQueue.Enqueue(continueTask.start);
                 }
             }
             else
-                this.continueQueue.Enqueue(continueTask.start);
+                lock (lockObject)
+                {
+                    this.continueQueue.Enqueue(continueTask.start);
+                }
 
             return continueTask;
         }
