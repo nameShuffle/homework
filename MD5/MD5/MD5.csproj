@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A8210D7D-8AA2-4308-B2AC-63685DDC1EC7}</ProjectGuid>
+    <ProjectGuid>{B79AD27F-846B-4C85-88EC-6E30D84F177C}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>MyThreadPool</RootNamespace>
-    <AssemblyName>MyThreadPool</AssemblyName>
+    <RootNamespace>MD5</RootNamespace>
+    <AssemblyName>MD5</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,10 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IMyTask.cs" />
-    <Compile Include="MyTask.cs" />
-    <Compile Include="MyTaskWithArgs.cs" />
-    <Compile Include="MyThreadPool.cs" />
+    <Compile Include="CheckSum.cs" />
+    <Compile Include="CheckSumThreads.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

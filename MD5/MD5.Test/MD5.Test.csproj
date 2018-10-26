@@ -8,8 +8,8 @@
     <ProjectGuid>{2E3DF5C2-8A38-4A03-86D7-8D463C917E47}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MyThreadPool.Test</RootNamespace>
-    <AssemblyName>MyThreadPool.Test</AssemblyName>
+    <RootNamespace>MD5.Test</RootNamespace>
+    <AssemblyName>MD5.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -61,17 +61,11 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="MyThreadPoolTest.cs" />
+    <Compile Include="MD5Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MyThreadPool\MyThreadPool.csproj">
-      <Project>{a8210d7d-8aa2-4308-b2ac-63685ddc1ec7}</Project>
-      <Name>MyThreadPool</Name>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
