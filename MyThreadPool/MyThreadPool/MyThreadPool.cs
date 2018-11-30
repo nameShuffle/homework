@@ -19,6 +19,8 @@ namespace MyThreadPool
         private CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
         private CancellationToken token;
 
+        private AutoResetEvent readyTask;
+
         /// <summary>
         /// Конструктор класса создает указанное количество потоков,
         /// потоки сразу же запускаются и переходят в режим ожидания
@@ -30,6 +32,8 @@ namespace MyThreadPool
             this.threadsNumber = n;
             this.tasks = new Queue<Action>();
             this.token = cancelTokenSource.Token;
+
+            this.readyTask = new AutoResetEvent(false);
 
             for (int i = 0; i < threadsNumber; i++)
             {
@@ -52,28 +56,19 @@ namespace MyThreadPool
         private void Working()
         {
             Action freeTask = null;
-            bool newTask = false;
-            while (true)
+            this.readyTask.WaitOne();
+            
+            lock (this.lockObject)
             {
                 if (tasks.Count != 0)
                 {
-                    lock (this.lockObject)
-                    {
-                        if (tasks.Count != 0)
-                        {
-                            freeTask = tasks.Dequeue();
-                            newTask = true;
-                        }
-                    }
-                }
-                if (newTask)
-                {
+                    freeTask = tasks.Dequeue();
                     freeTask();
-                    newTask = false;
                 }
-                if (this.token.IsCancellationRequested)
-                    return;
             }
+            
+            if (this.token.IsCancellationRequested)
+                return;
         }
 
         /// <summary>
@@ -96,6 +91,7 @@ namespace MyThreadPool
             lock (this.lockObject)
             {
                 this.tasks.Enqueue(newTask.Start);
+                this.readyTask.Set();
                 return newTask;
             }
         }

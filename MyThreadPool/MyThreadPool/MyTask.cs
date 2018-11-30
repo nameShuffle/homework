@@ -3,6 +3,7 @@
 //например, ManualResetEvent
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MyThreadPool
 {
@@ -29,6 +30,8 @@ namespace MyThreadPool
 
         private Action start;
 
+        private ManualResetEvent ready;
+
         /// <summary>
         /// Конструктор класса задач без аргументов, инициализует значения для дальнейшей работы
         /// с задачей.
@@ -46,6 +49,7 @@ namespace MyThreadPool
             this.poolQueue = poolQueue;
             this.continueQueue = new Queue<Action>();
             this.error = false;
+            ready = new ManualResetEvent(false);
         }
 
 
@@ -76,6 +80,7 @@ namespace MyThreadPool
             }
             
             this.isCompleted = true;
+            ready.Set();
 
             while (continueQueue.Count != 0)
             {
@@ -95,20 +100,15 @@ namespace MyThreadPool
         public TResult Result
         {
             get
-            {
-                while (true)
+            { 
+                ready.WaitOne();
+                if (error)
                 {
-                    if (isCompleted)
-                    {
-                        if (error)
-                        {
-                            throw new AggregateException(exception);
-                        }   
-                        else
-                        {
-                            return this.result;
-                        }
-                    }                  
+                    throw new AggregateException(exception);
+                }   
+                else
+                {
+                    return this.result;
                 }
             }
         }
