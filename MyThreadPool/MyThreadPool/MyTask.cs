@@ -1,8 +1,10 @@
-﻿//mytask нужно сделать прайват влож классом у пула
+﻿/*
+//mytask нужно сделать прайват влож классом у пула
 //переписать крутящее ожидание, использовать примитив синхронизации
 //например, ManualResetEvent
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MyThreadPool
 {
@@ -14,7 +16,7 @@ namespace MyThreadPool
     /// зависит от результат начальной функции.
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    public class MyTask<TResult>: IMyTask<TResult>
+    public class MyTask<TResult> : IMyTask<TResult>
     {
         private Func<TResult> task;
         private volatile bool isCompleted;
@@ -28,6 +30,8 @@ namespace MyThreadPool
         private Exception exception;
 
         private Action start;
+
+        private ManualResetEvent ready;
 
         /// <summary>
         /// Конструктор класса задач без аргументов, инициализует значения для дальнейшей работы
@@ -46,6 +50,7 @@ namespace MyThreadPool
             this.poolQueue = poolQueue;
             this.continueQueue = new Queue<Action>();
             this.error = false;
+            ready = new ManualResetEvent(false);
         }
 
 
@@ -74,8 +79,9 @@ namespace MyThreadPool
                 this.error = true;
                 this.exception = e;
             }
-            
+
             this.isCompleted = true;
+            ready.Set();
 
             while (continueQueue.Count != 0)
             {
@@ -96,19 +102,14 @@ namespace MyThreadPool
         {
             get
             {
-                while (true)
+                ready.WaitOne();
+                if (error)
                 {
-                    if (isCompleted)
-                    {
-                        if (error)
-                        {
-                            throw new AggregateException(exception);
-                        }   
-                        else
-                        {
-                            return this.result;
-                        }
-                    }                  
+                    throw new AggregateException(exception);
+                }
+                else
+                {
+                    return this.result;
                 }
             }
         }
@@ -148,4 +149,4 @@ namespace MyThreadPool
             return continueTask;
         }
     }
-}
+}*/

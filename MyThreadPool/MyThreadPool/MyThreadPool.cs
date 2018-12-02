@@ -19,6 +19,8 @@ namespace MyThreadPool
         private CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
         private CancellationToken token;
 
+        private AutoResetEvent readyTask;
+
         /// <summary>
         /// Конструктор класса создает указанное количество потоков,
         /// потоки сразу же запускаются и переходят в режим ожидания
@@ -30,6 +32,8 @@ namespace MyThreadPool
             this.threadsNumber = n;
             this.tasks = new Queue<Action>();
             this.token = cancelTokenSource.Token;
+
+            this.readyTask = new AutoResetEvent(false);
 
             for (int i = 0; i < threadsNumber; i++)
             {
@@ -52,27 +56,39 @@ namespace MyThreadPool
         private void Working()
         {
             Action freeTask = null;
-            bool newTask = false;
             while (true)
             {
-                if (tasks.Count != 0)
+                this.readyTask.WaitOne();
+
+                if (this.token.IsCancellationRequested)
                 {
-                    lock (this.lockObject)
+                    this.readyTask.Set();
+                    return;
+                }
+
+                bool newTask = false;
+
+                lock (this.lockObject)
+                {
+                    if (tasks.Count != 0)
                     {
-                        if (tasks.Count != 0)
-                        {
-                            freeTask = tasks.Dequeue();
-                            newTask = true;
-                        }
+                        freeTask = tasks.Dequeue();
+                        newTask = true;
                     }
                 }
+
                 if (newTask)
                 {
                     freeTask();
                     newTask = false;
                 }
+
                 if (this.token.IsCancellationRequested)
+                {
+                    this.readyTask.Set();
                     return;
+                }
+                    
             }
         }
 
@@ -96,6 +112,7 @@ namespace MyThreadPool
             lock (this.lockObject)
             {
                 this.tasks.Enqueue(newTask.Start);
+                this.readyTask.Set();
                 return newTask;
             }
         }
@@ -123,7 +140,6 @@ namespace MyThreadPool
             cancelTokenSource.Cancel();
         }
 
-        /*
         /// <summary>
         /// Класс, реализующий Task. На основе переданной в пул потоков
         /// функции для удобства работы с ней создается объект данного класса.
@@ -132,7 +148,7 @@ namespace MyThreadPool
         /// зависит от результат начальной функции.
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
-        private class MyTask<TResult> : IMyTask<TResult>
+        public class MyTask<TResult> : IMyTask<TResult>
         {
             private Func<TResult> task;
             private volatile bool isCompleted;
@@ -146,6 +162,8 @@ namespace MyThreadPool
             private Exception exception;
 
             private Action start;
+
+            private ManualResetEvent ready;
 
             /// <summary>
             /// Конструктор класса задач без аргументов, инициализует значения для дальнейшей работы
@@ -164,6 +182,7 @@ namespace MyThreadPool
                 this.poolQueue = poolQueue;
                 this.continueQueue = new Queue<Action>();
                 this.error = false;
+                ready = new ManualResetEvent(false);
             }
 
 
@@ -194,6 +213,7 @@ namespace MyThreadPool
                 }
 
                 this.isCompleted = true;
+                ready.Set();
 
                 while (continueQueue.Count != 0)
                 {
@@ -214,19 +234,14 @@ namespace MyThreadPool
             {
                 get
                 {
-                    while (true)
+                    ready.WaitOne();
+                    if (error)
                     {
-                        if (isCompleted)
-                        {
-                            if (error)
-                            {
-                                throw new AggregateException(exception);
-                            }
-                            else
-                            {
-                                return this.result;
-                            }
-                        }
+                        throw new AggregateException(exception);
+                    }
+                    else
+                    {
+                        return this.result;
                     }
                 }
             }
@@ -238,7 +253,7 @@ namespace MyThreadPool
             /// <typeparam name="TNewResult">Результат новой переданной функции.</typeparam>
             /// <param name="func">Функция, на основе которой будет создана новая задача.</param>
             /// <returns>Экземпляр класса MyTaskWithArgs для дальнейшей работы с ним.</returns>
-            public MyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
+            public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
             {
                 TNewResult ContinueFunction()
                 {
@@ -253,6 +268,7 @@ namespace MyThreadPool
                     lock (lockObject)
                     {
                         this.poolQueue.Enqueue(continueTask.Start);
+                        //readyTask.Set();
                     }
                 }
                 else
@@ -265,6 +281,6 @@ namespace MyThreadPool
 
                 return continueTask;
             }
-        }*/
+        }
     }
 }

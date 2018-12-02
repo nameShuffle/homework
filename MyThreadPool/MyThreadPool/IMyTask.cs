@@ -8,10 +8,10 @@ namespace MyThreadPool
     /// выполнена она или нет.
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    interface IMyTask <TResult>
+    public interface IMyTask<TResult>
     {
         bool IsCompleted { get; }
         TResult Result { get; }
-        MyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
+        IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func);
     }
 }
