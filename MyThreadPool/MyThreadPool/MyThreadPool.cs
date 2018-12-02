@@ -108,7 +108,7 @@ namespace MyThreadPool
         /// </returns>
         public MyTask<TResult> AddTask<TResult> (Func<TResult> func)
         {
-            var newTask = new MyTask<TResult>(func, tasks);
+            var newTask = new MyTask<TResult>(func, this);
             lock (this.lockObject)
             {
                 this.tasks.Enqueue(newTask.Start);
@@ -153,7 +153,7 @@ namespace MyThreadPool
             private Func<TResult> task;
             private volatile bool isCompleted;
             private TResult result;
-            private Queue<Action> poolQueue;
+            private MyThreadPool pool;
             private Queue<Action> continueQueue;
 
             private Object lockObject = new Object();
@@ -174,15 +174,15 @@ namespace MyThreadPool
             /// Ссылка на очередь задач из пула для добавления новых.
             /// Требуется для работы функции ContinueWith.
             /// </param>
-            public MyTask(Func<TResult> func, Queue<Action> poolQueue)
+            public MyTask(Func<TResult> func, MyThreadPool pool)
             {
                 this.task = func;
                 this.isCompleted = false;
                 this.start = StartFunction;
-                this.poolQueue = poolQueue;
+                this.pool = pool;
                 this.continueQueue = new Queue<Action>();
                 this.error = false;
-                ready = new ManualResetEvent(false);
+                this.ready = new ManualResetEvent(false);
             }
 
 
@@ -220,7 +220,8 @@ namespace MyThreadPool
                     lock (this.lockObject)
                     {
                         Action continueTask = continueQueue.Dequeue();
-                        this.poolQueue.Enqueue(continueTask);
+                        this.pool.tasks.Enqueue(continueTask);
+                        this.pool.readyTask.Set();
                     }
                 }
             }
@@ -261,14 +262,14 @@ namespace MyThreadPool
                     return func(arg);
                 }
 
-                var continueTask = new MyTask<TNewResult>(ContinueFunction, this.poolQueue);
+                var continueTask = new MyTask<TNewResult>(ContinueFunction, this.pool);
 
                 if (this.IsCompleted)
                 {
                     lock (lockObject)
                     {
-                        this.poolQueue.Enqueue(continueTask.Start);
-                        //readyTask.Set();
+                        this.pool.tasks.Enqueue(continueTask.Start);
+                        this.pool.readyTask.Set();
                     }
                 }
                 else
