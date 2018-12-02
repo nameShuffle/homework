@@ -20,11 +20,8 @@ namespace Lazy.Test
         [Fact]
         public void OrdinaryGetTest()
         {
-            int function()
-            {
-                return 21;
-            }
-
+            int function() => 21;
+            
             var simpleLazy = LazyFactory.CreateSimpleLazy(function);
 
             Assert.Equal(21, simpleLazy.Get);
@@ -33,11 +30,7 @@ namespace Lazy.Test
         [Fact]
         public void SecondCalculatingTest()
         {
-            int randomFunction()
-            {
-                int randomNumber = random.Next(0, 100);
-                return randomNumber;
-            }
+            int randomFunction() => random.Next(0, 100);
 
             var simpleLazy = LazyFactory.CreateSimpleLazy(randomFunction);
 
