@@ -123,7 +123,7 @@ namespace ChatTest
             {
                 while(true)
                 {
-                    string message = reader.ReadToEnd();
+                    string message = reader.ReadLine();
                     Console.WriteLine(message);
                     if (message == "exit")
                     {
