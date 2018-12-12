@@ -23,13 +23,13 @@ for:
 -
   branches:
     only:
-      - simpleftp
+      - simpleFTP
 
   environment:
     matrix:
-     - solution_name: SimpleFTPServer/SimpleFTPServer.sln    
-     - solution_name: SimpleFTPClient/SimpleFTPClient.sln
+     - solution_name: ServerFTP/ServerFTP.sln    
+     - solution_name: ClientFTP/ClientFTP.sln
   
   build_script:
-    - msbuild SimpleFTPServer/SimpleFTPServer.sln    
-    - msbuild SimpleFTPClient/SimpleFTPClient.sln
+    - msbuild ServerFTP/ServerFTP.sln   
+    - msbuild ClientFTP/ClientFTP.sln
