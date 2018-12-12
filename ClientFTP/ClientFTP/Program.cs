@@ -72,7 +72,7 @@ namespace ClientFTP
                             Console.WriteLine(data);
                         }
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         throw ex;
                     }
