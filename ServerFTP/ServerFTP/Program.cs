@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,7 +7,7 @@ using System.Threading.Tasks;
 namespace ServerFTP
 {
     class Program
-    { 
+    {
         public static void Main(string[] args)
         {
             const int port = 5555;
@@ -20,10 +17,18 @@ namespace ServerFTP
             server.Work(port);
         }
 
-
+        /// <summary>
+        /// Класс, предоставляющий возможность создания сервера и корректной обработки
+        /// запросов, поступающих с клиента.
+        /// </summary>
         class Server
         {
-
+            /// <summary>
+            /// Главный метод, реализующий логику работы сервера. 
+            /// При попытке подключения клиента создается и запускается новый Task,
+            /// в котором выполняется обработка запросов, поступающих с клиента.
+            /// </summary>
+            /// <param name="port">Номер порта.</param>
             public void Work(int port)
             {
                 var listener = new TcpListener(IPAddress.Any, port);
@@ -33,27 +38,24 @@ namespace ServerFTP
                 {
                     var socket = listener.AcceptSocket();
 
-                    Console.WriteLine("Слушаю");
-
                     var manager = new Task(clientSocket => ManageRequest((Socket)clientSocket), socket);
 
                     manager.Start();
                 }
             }       
 
+            /// <summary>
+            /// Метод позволяет корректно обрабатывать команды подключившегося клиента.
+            /// Распознает тип команды и вызывает метод, требуемый для выполнения задачи.
+            /// </summary>
             public void ManageRequest(Socket socket)
             {
                 var stream = new NetworkStream(socket);
 
                 var reader = new StreamReader(stream);
-
-                Console.WriteLine("Хочу прочитать");
+                var writer = new StreamWriter(stream);
 
                 var request = reader.ReadLine();
-
-                Console.WriteLine("Я прочитал");
-
-                var writer = new StreamWriter(stream);
 
                 if (request[0] != '1' && request[0] != '2')
                 {
@@ -72,39 +74,47 @@ namespace ServerFTP
                     var filePath = request.Substring(2);
                     GetFileContent(filePath, writer);
                 }
+
+                socket.Close();
             }
 
+            /// <summary>
+            /// Метод получает содержимое файла по данному пути и записывает его
+            /// в поток в требуемом формате.
+            /// Если такого файла не существует, в поток записывается значение
+            /// "-1".
+            /// </summary>
+            /// <param name="filePath">Путь к файлу.</param>
+            /// <param name="writer">Позволяет записывать данные в нужный поток.</param>
             private void GetFileContent(string filePath, StreamWriter writer)
             {
                 if (!File.Exists(filePath))
                 {
-                    writer.WriteLine("-1");
+                    writer.Write("-1");
                     writer.Flush();
                     return;
                 }
 
-                using (Stream source = File.OpenRead(filePath))
-                {
-                    writer.Write(source.Length);
-
-                    byte[] buffer = new byte[2048];
-                    int bytesRead;
-                    while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        writer.Write(Encoding.UTF8.GetString(buffer));
-                    }
-                    writer.WriteLine();
-                    writer.Flush();
-                }
+                byte[] content = File.ReadAllBytes(filePath);
+                long length = content.Length;
+                writer.Write(length.ToString() + ' ' + Encoding.UTF8.GetString(content));
+                writer.Flush();
             }
-
+            
+            /// <summary>
+            /// Данный метод получает список файлов и подпапок по данному пути
+            /// и записывает его в поток в требуемом формате.
+            /// Если такой директории не существует, в поток заносится значение "-1".
+            /// </summary>
+            /// <param name="dirPath">Путь к директории.</param>
+            /// <param name="writer">Позволяет записывать в нужный поток данные.</param>
             private void GetListOfFiles(string dirPath, StreamWriter writer)
             {
                 var dir = new DirectoryInfo(dirPath);
 
                 if (!dir.Exists)
                 {
-                    writer.WriteLine("-1");
+                    writer.Write("-1");
                     writer.Flush();
                     return;
                 }
@@ -125,7 +135,6 @@ namespace ServerFTP
                 {
                     writer.Write(files.Name + " - false ");
                 }
-                writer.WriteLine();
                 writer.Flush();
             }
         }
