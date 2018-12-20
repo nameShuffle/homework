@@ -6,6 +6,11 @@ for:
 -
   branches:
     only:
+      - master
+      
+-
+  branches:
+    only:
       - Lazy
       
   
