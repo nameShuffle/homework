@@ -8,7 +8,8 @@ namespace MyNUnit
     [AttributeUsage(AttributeTargets.Method)]
     public class TestAttribute : Attribute
     {
-        //тут нужно написать аргументы атрибута
+        public Type Expected { get; set; }
+        public string Ignore { get; set; }
     }
 
     /// <summary>
