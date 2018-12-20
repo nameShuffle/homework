@@ -78,6 +78,7 @@ namespace MyThreadPool
 
                 if (this.token.IsCancellationRequested)
                 {
+                    this.readyTask.Set();
                     return;
                 }
                     
@@ -132,10 +133,7 @@ namespace MyThreadPool
         public void Shutdown()
         {
             this.cancelTokenSource.Cancel();
-            foreach (var thread in this.threads)
-            {
-                this.readyTask.Set();
-            }
+            this.readyTask.Set();
             while (true)
             {
                 if (ThreadsCount() == 0)
