@@ -25,6 +25,7 @@ namespace MyNUnit
                 if (!dir.Exists)
                 {
                     Console.WriteLine("Проверьте корректность введенных данных");
+                    return null;
                 }
 
                 RunTests(path);
@@ -32,6 +33,7 @@ namespace MyNUnit
             catch
             {
                 Console.WriteLine("Проверьте корректность введенных данных");
+                return null;
             }
 
             return this.testResults;
