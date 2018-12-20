@@ -25,9 +25,8 @@ namespace TestMyNUnit
         public void CorrectDirectoryTest()
         {
             string path = GetDirectory("/TestApp/bin/Debug");
-            List<TestResult> results = new List<TestResult>();
             UnitTesting testingSystem = new UnitTesting();
-            results = testingSystem.StartUnitTesting(path);
+            var results = testingSystem.StartUnitTesting(path);
             Assert.NotNull(results);
         }
 
@@ -35,9 +34,8 @@ namespace TestMyNUnit
         public void OkTest()
         {
             string path = GetDirectory("/TestApp/bin/Debug");
-            List<TestResult> results = new List<TestResult>();
             UnitTesting testingSystem = new UnitTesting();
-            results = testingSystem.StartUnitTesting(path);
+            var results = testingSystem.StartUnitTesting(path);
             foreach (var result in results)
             {
                 if (result.TestName == "SubTest")
@@ -52,9 +50,8 @@ namespace TestMyNUnit
         public void NotTest()
         {
             string path = GetDirectory("/TestApp/bin/Debug");
-            List<TestResult> results = new List<TestResult>();
             UnitTesting testingSystem = new UnitTesting();
-            results = testingSystem.StartUnitTesting(path);
+            var results = testingSystem.StartUnitTesting(path);
             foreach (var result in results)
             {
                 if (result.TestName == "ExceptionTest")
@@ -69,9 +66,8 @@ namespace TestMyNUnit
         public void ExceptionTest()
         {
             string path = GetDirectory("/TestApp/bin/Debug");
-            List<TestResult> results = new List<TestResult>();
             UnitTesting testingSystem = new UnitTesting();
-            results = testingSystem.StartUnitTesting(path);
+            var results = testingSystem.StartUnitTesting(path);
             foreach (var result in results)
             {
                 if (result.TestName == "ExceptionTest")
@@ -86,9 +82,8 @@ namespace TestMyNUnit
         public void ExpectedExceptionTest()
         {
             string path = GetDirectory("/TestApp/bin/Debug");
-            List<TestResult> results = new List<TestResult>();
             UnitTesting testingSystem = new UnitTesting();
-            results = testingSystem.StartUnitTesting(path);
+            var results = testingSystem.StartUnitTesting(path);
             foreach (var result in results)
             {
                 if (result.TestName == "TestMethod")
@@ -103,9 +98,8 @@ namespace TestMyNUnit
         public void IgnoreTest()
         {
             string path = GetDirectory("/TestApp/TestApp/bin/Debug");
-            List<TestResult> results = new List<TestResult>();
             UnitTesting testingSystem = new UnitTesting();
-            results = testingSystem.StartUnitTesting(path);
+            var results = testingSystem.StartUnitTesting(path);
             foreach (var result in results)
             {
                 if (result.TestName == "IgnoringTest")
@@ -121,9 +115,8 @@ namespace TestMyNUnit
         public void TwoClassesTest()
         {
             string path = GetDirectory("/TestApp2/TestApp2/bin/Debug");
-            List<TestResult> results = new List<TestResult>();
             UnitTesting testingSystem = new UnitTesting();
-            results = testingSystem.StartUnitTesting(path);
+            var results = testingSystem.StartUnitTesting(path);
             string firstClass = results[0].TypeName;
             string secondClass = "";
             foreach (var result in results)
