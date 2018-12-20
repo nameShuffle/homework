@@ -6,7 +6,7 @@ for:
 -
   branches:
     only:
-      - master
+      - Lazy
       
   
   environment:
