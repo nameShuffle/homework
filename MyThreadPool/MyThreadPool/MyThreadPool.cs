@@ -60,12 +60,6 @@ namespace MyThreadPool
             {
                 this.readyTask.WaitOne();
 
-                if (this.token.IsCancellationRequested)
-                {
-                    this.readyTask.Set();
-                    return;
-                }
-
                 bool newTask = false;
 
                 lock (this.lockObject)
@@ -106,7 +100,7 @@ namespace MyThreadPool
         /// Возвращает ссылку на экземпляр класса MyTask,
         /// в который для удобства была обернута переданная задача.
         /// </returns>
-        public MyTask<TResult> AddTask<TResult> (Func<TResult> func)
+        public IMyTask<TResult> AddTask<TResult> (Func<TResult> func)
         {
             var newTask = new MyTask<TResult>(func, this);
             lock (this.lockObject)
@@ -137,7 +131,7 @@ namespace MyThreadPool
         /// </summary>
         public void Shutdown()
         {
-            cancelTokenSource.Cancel();
+            this.cancelTokenSource.Cancel();
         }
 
         /// <summary>
@@ -148,7 +142,7 @@ namespace MyThreadPool
         /// зависит от результат начальной функции.
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
-        public class MyTask<TResult> : IMyTask<TResult>
+        private class MyTask<TResult> : IMyTask<TResult>
         {
             private Func<TResult> task;
             private volatile bool isCompleted;
@@ -266,7 +260,7 @@ namespace MyThreadPool
 
                 if (this.IsCompleted)
                 {
-                    lock (lockObject)
+                    lock (this.lockObject)
                     {
                         this.pool.tasks.Enqueue(continueTask.Start);
                         this.pool.readyTask.Set();
@@ -274,7 +268,7 @@ namespace MyThreadPool
                 }
                 else
                 {
-                    lock (lockObject)
+                    lock (this.lockObject)
                     {
                         this.continueQueue.Enqueue(continueTask.Start);
                     }
