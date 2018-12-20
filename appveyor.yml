@@ -8,11 +8,6 @@ for:
     only:
       - master
       
--
-  branches:
-    only:
-      - Lazy
-      
   
   environment:
       matrix:
