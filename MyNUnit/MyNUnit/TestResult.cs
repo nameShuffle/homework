@@ -16,8 +16,8 @@ namespace MyNUnit
             TestName = testName;
         }
 
-        public string TypeName { get; set; }
-        public string TestName { get; set; }
+        public string TypeName { get; }
+        public string TestName { get; }
         public long Time { get; set; }
         public bool IsOk { get; set; }
         public string WhyIgnored { get; set; }

@@ -97,7 +97,7 @@ namespace TestMyNUnit
         [Fact]
         public void IgnoreTest()
         {
-            string path = GetDirectory("/TestApp/TestApp/bin/Debug");
+            string path = GetDirectory("/TestApp/bin/Debug");
             UnitTesting testingSystem = new UnitTesting();
             var results = testingSystem.StartUnitTesting(path);
             foreach (var result in results)

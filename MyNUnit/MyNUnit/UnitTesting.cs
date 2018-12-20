@@ -40,17 +40,15 @@ namespace MyNUnit
         }
 
         /// <summary>
-        /// Метод ищет сборки по указанному пути, разбирает типа в каждой сборке и запускает
+        /// Метод ищет сборки по указанному пути, разбирает типы в каждой сборке и запускает
         /// для каждого типа методы, распределяющий тесты по нужным спискам.
         /// </summary>
         /// <param name="path">Путь, в котором осуществляется поиск.</param>
         private void RunTests(string path)
         {
             var testsDllAssemblies = Directory.GetFiles(path, "*.dll");
-            var testsExeAssemblies = Directory.GetFiles(path, "*.exe");
 
             List<Task> tasksDlls = new List<Task>();
-            List<Task> tasksExes = new List<Task>();
 
             foreach (var dllFile in testsDllAssemblies)
             {
@@ -62,21 +60,7 @@ namespace MyNUnit
                 }
             }
 
-            /*foreach (var exeFile in testsExeAssemblies)
-            {
-                foreach (var type in Assembly.LoadFile(exeFile).GetExportedTypes())
-                {
-                    var handleType = new Task(curType => RunTestsInClass((Type)curType), type);
-                    tasksExes.Add(handleType);
-                    handleType.Start();
-                }
-            }*/
-
             foreach (var task in tasksDlls)
-            {
-                task.Wait();
-            }
-            foreach (var task in tasksExes)
             {
                 task.Wait();
             }
