@@ -49,7 +49,7 @@ namespace MyThreadPool.Test
             var pool = new MyThreadPool(5);
             var nullTask = pool.AddTask(SleepFunction);
 
-            Assert.Equal(false, nullTask.IsCompleted);
+            Assert.False(nullTask.IsCompleted);
         }
 
         [Fact]

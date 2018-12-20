@@ -74,12 +74,10 @@ namespace MyThreadPool
                 if (newTask)
                 {
                     freeTask();
-                    newTask = false;
                 }
 
                 if (this.token.IsCancellationRequested)
                 {
-                    this.readyTask.Set();
                     return;
                 }
                     
@@ -120,7 +118,9 @@ namespace MyThreadPool
             foreach (var thread in this.threads)
             {
                 if (thread.IsAlive)
+                {
                     count++;
+                }
             }
 
             return count;
@@ -132,6 +132,17 @@ namespace MyThreadPool
         public void Shutdown()
         {
             this.cancelTokenSource.Cancel();
+            foreach (var thread in this.threads)
+            {
+                this.readyTask.Set();
+            }
+            while (true)
+            {
+                if (ThreadsCount() == 0)
+                {
+                    return;
+                }
+            }
         }
 
         /// <summary>
@@ -155,8 +166,6 @@ namespace MyThreadPool
             private bool error;
             private Exception exception;
 
-            private Action start;
-
             private ManualResetEvent ready;
 
             /// <summary>
@@ -172,7 +181,6 @@ namespace MyThreadPool
             {
                 this.task = func;
                 this.isCompleted = false;
-                this.start = StartFunction;
                 this.pool = pool;
                 this.continueQueue = new Queue<Action>();
                 this.error = false;
@@ -188,37 +196,32 @@ namespace MyThreadPool
             /// <summary>
             /// Свойство, возвращает Action с нужной задачей
             /// </summary>
-            public Action Start => start;
-
-            /// <summary>
-            /// Данная функция запускает вычисление задачи. Вызывается свободным потоком
-            /// из пула потоков, когда он забирает задачу себе.
-            /// </summary>
-            public void StartFunction()
-            {
-                try
+            public Action Start =>
+                () =>
                 {
-                    this.result = this.task();
-                }
-                catch (Exception e)
-                {
-                    this.error = true;
-                    this.exception = e;
-                }
-
-                this.isCompleted = true;
-                ready.Set();
-
-                while (continueQueue.Count != 0)
-                {
-                    lock (this.lockObject)
+                    try
                     {
-                        Action continueTask = continueQueue.Dequeue();
-                        this.pool.tasks.Enqueue(continueTask);
-                        this.pool.readyTask.Set();
+                        this.result = this.task();
                     }
-                }
-            }
+                    catch (Exception e)
+                    {
+                        this.error = true;
+                        this.exception = e;
+                    }
+
+                    this.isCompleted = true;
+                    ready.Set();
+
+                    while (continueQueue.Count != 0)
+                    {
+                        lock (this.lockObject)
+                        {
+                            Action continueTask = continueQueue.Dequeue();
+                            this.pool.tasks.Enqueue(continueTask);
+                            this.pool.readyTask.Set();
+                        }
+                    }
+                };
 
             /// <summary>
             /// Функция, которая позволяет пользователю получить результат
@@ -256,25 +259,21 @@ namespace MyThreadPool
                     return func(arg);
                 }
 
-                var continueTask = new MyTask<TNewResult>(ContinueFunction, this.pool);
-
+                
                 if (this.IsCompleted)
                 {
-                    lock (this.lockObject)
-                    {
-                        this.pool.tasks.Enqueue(continueTask.Start);
-                        this.pool.readyTask.Set();
-                    }
+                    var continueTask = this.pool.AddTask(ContinueFunction);
+                    return continueTask;
                 }
                 else
                 {
+                    var continueTask = new MyTask<TNewResult>(ContinueFunction, this.pool);
                     lock (this.lockObject)
                     {
                         this.continueQueue.Enqueue(continueTask.Start);
                     }
+                    return continueTask;
                 }
-
-                return continueTask;
             }
         }
     }
