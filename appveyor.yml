@@ -28,6 +28,10 @@ for:
     matrix:
      - solution_name: ServerFTP/ServerFTP.sln    
      - solution_name: ClientFTP/ClientFTP.sln
+     
+  before_build:
+    - cmd: nuget restore ServerFTP/ServerFTP.sln
+    - cmd: nuget restore ClientFTP/ClientFTP.sln
   
   build_script:
     - msbuild ServerFTP/ServerFTP.sln   
@@ -41,6 +45,9 @@ for:
   environment:
     matrix:
      - solution_name: MyNUnit/MyNUnit.sln
+  
+  before_build:
+    - cmd: nuget restore MyNUnit/MyNUnit.sln
   
   build_script:
     - msbuild MyNUnit/MyNUnit.sln
