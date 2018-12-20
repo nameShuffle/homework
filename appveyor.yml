@@ -1,13 +1,50 @@
 version: 1.0.{build}
 
 image: Visual Studio 2017
+      
+for:
+-
+  branches:
+    only:
+      - master
+      
+  
+  environment:
+      matrix:
+        - solution_name: Lazy/Lazy.sln
 
-environment:
+  before_build:
+    - cmd: nuget restore Lazy/Lazy.sln
+
+  build_script:
+    - msbuild Lazy/Lazy.sln
+
+-
+  branches:
+    only:
+      - simpleFTP
+
+  environment:
     matrix:
-    - solution_name: MyThreadPool/MyThreadPool.sln
+     - solution_name: ServerFTP/ServerFTP.sln    
+     - solution_name: ClientFTP/ClientFTP.sln
+  
+  build_script:
+    - msbuild ServerFTP/ServerFTP.sln   
+    - msbuild ClientFTP/ClientFTP.sln
 
-before_build:
-  - cmd: nuget restore MyThreadPool/MyThreadPool.sln
-    
-build_script:
-    - msbuild MyThreadPool/MyThreadPool.sln
+-
+  branches:
+    only:
+      - myThreadPool
+      
+  
+  environment:
+      matrix:
+        - solution_name: myThreadPool/myThreadPool.sln
+
+  before_build:
+    - cmd: nuget restore myThreadPool/myThreadPool.sln
+
+  build_script:
+    - msbuild myThreadPool/myThreadPool.sln
