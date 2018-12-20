@@ -16,8 +16,10 @@ namespace MyThreadPool
         private Queue<Action> tasks;
 
         private Object lockObject = new Object();
-        CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
         private CancellationToken token;
+
+        private AutoResetEvent readyTask;
 
         /// <summary>
         /// Конструктор класса создает указанное количество потоков,
@@ -30,6 +32,8 @@ namespace MyThreadPool
             this.threadsNumber = n;
             this.tasks = new Queue<Action>();
             this.token = cancelTokenSource.Token;
+
+            this.readyTask = new AutoResetEvent(false);
 
             for (int i = 0; i < threadsNumber; i++)
             {
@@ -52,27 +56,39 @@ namespace MyThreadPool
         private void Working()
         {
             Action freeTask = null;
-            bool newTask = false;
             while (true)
             {
-                if (tasks.Count != 0)
+                this.readyTask.WaitOne();
+
+                if (this.token.IsCancellationRequested)
                 {
-                    lock (this.lockObject)
+                    this.readyTask.Set();
+                    return;
+                }
+
+                bool newTask = false;
+
+                lock (this.lockObject)
+                {
+                    if (tasks.Count != 0)
                     {
-                        if (tasks.Count != 0)
-                        {
-                            freeTask = tasks.Dequeue();
-                            newTask = true;
-                        }
+                        freeTask = tasks.Dequeue();
+                        newTask = true;
                     }
                 }
-                if(newTask)
+
+                if (newTask)
                 {
                     freeTask();
                     newTask = false;
                 }
+
                 if (this.token.IsCancellationRequested)
+                {
+                    this.readyTask.Set();
                     return;
+                }
+                    
             }
         }
 
@@ -92,10 +108,11 @@ namespace MyThreadPool
         /// </returns>
         public MyTask<TResult> AddTask<TResult> (Func<TResult> func)
         {
-            var newTask = new MyTask<TResult>(func, ref tasks);
-            lock(this.lockObject)
+            var newTask = new MyTask<TResult>(func, this);
+            lock (this.lockObject)
             {
-                this.tasks.Enqueue(newTask.start);
+                this.tasks.Enqueue(newTask.Start);
+                this.readyTask.Set();
                 return newTask;
             }
         }
@@ -121,6 +138,150 @@ namespace MyThreadPool
         public void Shutdown()
         {
             cancelTokenSource.Cancel();
+        }
+
+        /// <summary>
+        /// Класс, реализующий Task. На основе переданной в пул потоков
+        /// функции для удобства работы с ней создается объект данного класса.
+        /// Класс предоставляет возможность проверить готовность вычислений,
+        /// получить результат или добавить к данной задаче новую, результат которой
+        /// зависит от результат начальной функции.
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        public class MyTask<TResult> : IMyTask<TResult>
+        {
+            private Func<TResult> task;
+            private volatile bool isCompleted;
+            private TResult result;
+            private MyThreadPool pool;
+            private Queue<Action> continueQueue;
+
+            private Object lockObject = new Object();
+
+            private bool error;
+            private Exception exception;
+
+            private Action start;
+
+            private ManualResetEvent ready;
+
+            /// <summary>
+            /// Конструктор класса задач без аргументов, инициализует значения для дальнейшей работы
+            /// с задачей.
+            /// </summary>
+            /// <param name="func">Функция, на основе которой создается задача для пула потоков.</param>
+            /// <param name="poolQueue">
+            /// Ссылка на очередь задач из пула для добавления новых.
+            /// Требуется для работы функции ContinueWith.
+            /// </param>
+            public MyTask(Func<TResult> func, MyThreadPool pool)
+            {
+                this.task = func;
+                this.isCompleted = false;
+                this.start = StartFunction;
+                this.pool = pool;
+                this.continueQueue = new Queue<Action>();
+                this.error = false;
+                this.ready = new ManualResetEvent(false);
+            }
+
+
+            /// <summary>
+            /// Свойство, позваляющее пользователю проверить готовность задачи.
+            /// </summary>
+            public bool IsCompleted => isCompleted;
+
+            /// <summary>
+            /// Свойство, возвращает Action с нужной задачей
+            /// </summary>
+            public Action Start => start;
+
+            /// <summary>
+            /// Данная функция запускает вычисление задачи. Вызывается свободным потоком
+            /// из пула потоков, когда он забирает задачу себе.
+            /// </summary>
+            public void StartFunction()
+            {
+                try
+                {
+                    this.result = this.task();
+                }
+                catch (Exception e)
+                {
+                    this.error = true;
+                    this.exception = e;
+                }
+
+                this.isCompleted = true;
+                ready.Set();
+
+                while (continueQueue.Count != 0)
+                {
+                    lock (this.lockObject)
+                    {
+                        Action continueTask = continueQueue.Dequeue();
+                        this.pool.tasks.Enqueue(continueTask);
+                        this.pool.readyTask.Set();
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Функция, которая позволяет пользователю получить результат
+            /// вычисленной задачи. Однако, если результат задачи еще не известен,
+            /// данная функция ожидает его и тем самым блокирует поток, откуда она была вызвана.
+            /// </summary>
+            public TResult Result
+            {
+                get
+                {
+                    ready.WaitOne();
+                    if (error)
+                    {
+                        throw new AggregateException(exception);
+                    }
+                    else
+                    {
+                        return this.result;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Данная функция позволяет добавить новую задачу в пул потоков,
+            /// вычисление которой будет зависеть от результат текущей задачи.
+            /// </summary>
+            /// <typeparam name="TNewResult">Результат новой переданной функции.</typeparam>
+            /// <param name="func">Функция, на основе которой будет создана новая задача.</param>
+            /// <returns>Экземпляр класса MyTaskWithArgs для дальнейшей работы с ним.</returns>
+            public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
+            {
+                TNewResult ContinueFunction()
+                {
+                    var arg = this.Result;
+                    return func(arg);
+                }
+
+                var continueTask = new MyTask<TNewResult>(ContinueFunction, this.pool);
+
+                if (this.IsCompleted)
+                {
+                    lock (lockObject)
+                    {
+                        this.pool.tasks.Enqueue(continueTask.Start);
+                        this.pool.readyTask.Set();
+                    }
+                }
+                else
+                {
+                    lock (lockObject)
+                    {
+                        this.continueQueue.Enqueue(continueTask.Start);
+                    }
+                }
+
+                return continueTask;
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace MyThreadPool
+﻿using System;
+
+namespace MyThreadPool
 {
     /// <summary>
     /// Интерфейс задач, принятых к исполнению в пуле потоков. 
@@ -6,9 +8,10 @@
     /// выполнена она или нет.
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    interface IMyTask <TResult>
+    public interface IMyTask<TResult>
     {
         bool IsCompleted { get; }
         TResult Result { get; }
+        IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func);
     }
 }

@@ -1,5 +1,10 @@
-﻿using System;
+﻿/*
+//mytask нужно сделать прайват влож классом у пула
+//переписать крутящее ожидание, использовать примитив синхронизации
+//например, ManualResetEvent
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MyThreadPool
 {
@@ -11,7 +16,7 @@ namespace MyThreadPool
     /// зависит от результат начальной функции.
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    public class MyTask<TResult>: IMyTask<TResult>
+    public class MyTask<TResult> : IMyTask<TResult>
     {
         private Func<TResult> task;
         private volatile bool isCompleted;
@@ -24,7 +29,9 @@ namespace MyThreadPool
         private bool error;
         private Exception exception;
 
-        public Action start;
+        private Action start;
+
+        private ManualResetEvent ready;
 
         /// <summary>
         /// Конструктор класса задач без аргументов, инициализует значения для дальнейшей работы
@@ -35,21 +42,33 @@ namespace MyThreadPool
         /// Ссылка на очередь задач из пула для добавления новых.
         /// Требуется для работы функции ContinueWith.
         /// </param>
-        public MyTask(Func<TResult> func, ref Queue<Action> poolQueue)
+        public MyTask(Func<TResult> func, Queue<Action> poolQueue)
         {
             this.task = func;
             this.isCompleted = false;
-            this.start = Start;
+            this.start = StartFunction;
             this.poolQueue = poolQueue;
             this.continueQueue = new Queue<Action>();
             this.error = false;
+            ready = new ManualResetEvent(false);
         }
+
+
+        /// <summary>
+        /// Свойство, позваляющее пользователю проверить готовность задачи.
+        /// </summary>
+        public bool IsCompleted => isCompleted;
+
+        /// <summary>
+        /// Свойство, возвращает Action с нужной задачей
+        /// </summary>
+        public Action Start => start;
 
         /// <summary>
         /// Данная функция запускает вычисление задачи. Вызывается свободным потоком
         /// из пула потоков, когда он забирает задачу себе.
         /// </summary>
-        public void Start()
+        public void StartFunction()
         {
             try
             {
@@ -60,27 +79,17 @@ namespace MyThreadPool
                 this.error = true;
                 this.exception = e;
             }
-            
-            this.isCompleted = true;
 
-            while(continueQueue.Count != 0)
+            this.isCompleted = true;
+            ready.Set();
+
+            while (continueQueue.Count != 0)
             {
                 lock (this.lockObject)
                 {
                     Action continueTask = continueQueue.Dequeue();
                     this.poolQueue.Enqueue(continueTask);
                 }
-            }
-        }
-        
-        /// <summary>
-        /// Свойство, позваляющее пользователю проверить готовность задачи.
-        /// </summary>
-        public bool IsCompleted
-        {
-            get
-            {
-                return isCompleted;
             }
         }
 
@@ -93,17 +102,14 @@ namespace MyThreadPool
         {
             get
             {
-                while (true)
+                ready.WaitOne();
+                if (error)
                 {
-                    if (isCompleted)
-                    {
-                        if (error)
-                        {
-                            throw new AggregateException(exception);
-                        }   
-                        else
-                            return this.result;
-                    }                  
+                    throw new AggregateException(exception);
+                }
+                else
+                {
+                    return this.result;
                 }
             }
         }
@@ -115,24 +121,32 @@ namespace MyThreadPool
         /// <typeparam name="TNewResult">Результат новой переданной функции.</typeparam>
         /// <param name="func">Функция, на основе которой будет создана новая задача.</param>
         /// <returns>Экземпляр класса MyTaskWithArgs для дальнейшей работы с ним.</returns>
-        public MyTaskWithArgs<TResult, TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
+        public MyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
         {
-            MyTaskWithArgs<TResult, TNewResult> continueTask = new MyTaskWithArgs<TResult, TNewResult>(func, this);
-            
+            TNewResult ContinueFunction()
+            {
+                var arg = this.Result;
+                return func(arg);
+            }
+
+            var continueTask = new MyTask<TNewResult>(ContinueFunction, this.poolQueue);
+
             if (this.IsCompleted)
             {
                 lock (lockObject)
                 {
-                    this.poolQueue.Enqueue(continueTask.start);
+                    this.poolQueue.Enqueue(continueTask.Start);
                 }
             }
             else
+            {
                 lock (lockObject)
                 {
-                    this.continueQueue.Enqueue(continueTask.start);
+                    this.continueQueue.Enqueue(continueTask.Start);
                 }
+            }
 
             return continueTask;
         }
     }
-}
+}*/

@@ -13,7 +13,7 @@ namespace MyThreadPool.Test
         {
             bool? NullFunction() => null;
 
-            MyThreadPool pool = new MyThreadPool(5);
+            var pool = new MyThreadPool(5);
             var nullTask = pool.AddTask(NullFunction);
             
             Assert.Null(nullTask.Result);
@@ -24,7 +24,7 @@ namespace MyThreadPool.Test
         {
             int SimpleFunction() => 21;
 
-            MyThreadPool pool = new MyThreadPool(5);
+            var pool = new MyThreadPool(5);
             var nullTask = pool.AddTask(SimpleFunction);
 
             Assert.Equal(21, nullTask.Result);
@@ -33,7 +33,7 @@ namespace MyThreadPool.Test
         [Fact]
         public void ThreadNumberTest()
         {
-            MyThreadPool pool = new MyThreadPool(5);
+            var pool = new MyThreadPool(5);
             Assert.Equal(5, pool.ThreadsCount());
         }
 
@@ -46,7 +46,7 @@ namespace MyThreadPool.Test
                 return 25;
             }
 
-            MyThreadPool pool = new MyThreadPool(5);
+            var pool = new MyThreadPool(5);
             var nullTask = pool.AddTask(SleepFunction);
 
             Assert.Equal(false, nullTask.IsCompleted);
@@ -59,7 +59,7 @@ namespace MyThreadPool.Test
             int FuncTwo() => 2;
             int FuncThree() => 3;
 
-            MyThreadPool pool = new MyThreadPool(2);
+            var pool = new MyThreadPool(2);
             var taskOne = pool.AddTask(FuncOne);
             var taskTwo = pool.AddTask(FuncTwo);
             var taskThree = pool.AddTask(FuncThree);
@@ -78,7 +78,7 @@ namespace MyThreadPool.Test
                 return a + 10;
             }
 
-            MyThreadPool pool = new MyThreadPool(4);
+            var pool = new MyThreadPool(4);
             var taskOne = pool.AddTask(BasicFunc);
             var taskTwo = taskOne.ContinueWith(Add);
 
@@ -99,7 +99,7 @@ namespace MyThreadPool.Test
                 return a + 11;
             }
 
-            MyThreadPool pool = new MyThreadPool(4);
+            var pool = new MyThreadPool(4);
             var taskOne = pool.AddTask(BasicFunc);
             var taskTwo = taskOne.ContinueWith(AddOne);
             var taskThree = taskOne.ContinueWith(AddTwo);
@@ -110,13 +110,14 @@ namespace MyThreadPool.Test
         }
 
         [Fact]
-        public void CansellationTest()
+        public void CancellationTest()
         {
             int BasicFunc() => 10;
 
-            MyThreadPool pool = new MyThreadPool(4);
+            var pool = new MyThreadPool(4);
             var task = pool.AddTask(BasicFunc);
             pool.Shutdown();
+            Thread.Sleep(50);
 
             Assert.Equal(10, task.Result);
             Assert.Equal(0, pool.ThreadsCount());
@@ -133,10 +134,11 @@ namespace MyThreadPool.Test
                 return a;
             }
 
-            MyThreadPool pool = new MyThreadPool(5);
+            var pool = new MyThreadPool(5);
             var task = pool.AddTask(del);
 
-            Assert.Throws<AggregateException>(()=>task.Result);
+            Assert.Throws<AggregateException>(() => task.Result);
+
             try
             {
                 var result = task.Result;
@@ -144,7 +146,9 @@ namespace MyThreadPool.Test
             catch(AggregateException e)
             {
                 foreach (var ex in e.InnerExceptions)
+                {
                     Assert.ThrowsAsync<DivideByZeroException>(() => throw ex);
+                }
             }
         }
         
