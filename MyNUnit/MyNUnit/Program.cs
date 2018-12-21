@@ -10,9 +10,9 @@ namespace MyNUnit
             Console.WriteLine("Введите путь для тестирования:");
             string path = Console.ReadLine();
 
-            List<TestResult> results = new List<TestResult>();
+            var results = new List<TestResult>();
 
-            UnitTesting testingSystem = new UnitTesting();
+            var testingSystem = new UnitTesting();
             results = testingSystem.StartUnitTesting(path);
 
             if (results != null)

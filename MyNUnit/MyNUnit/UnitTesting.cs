@@ -51,7 +51,7 @@ namespace MyNUnit
         {
             var testsDllAssemblies = Directory.GetFiles(path, "*.dll");
 
-            List<Task> tasksDlls = new List<Task>();
+            var tasksDlls = new List<Task>();
 
             foreach (var dllFile in testsDllAssemblies)
             {
@@ -75,11 +75,11 @@ namespace MyNUnit
         /// <param name="type"></param>
         private void RunTestsInClass(Type type)
         {
-            List<TestInfo> beforeClassTestMethods = new List<TestInfo>();
-            List<TestInfo> afterClassTestMethods = new List<TestInfo>();
-            List<TestInfo> beforeTestMethods = new List<TestInfo>();
-            List<TestInfo> afterTestMethods = new List<TestInfo>();
-            List<TestInfo> testMethods = new List<TestInfo>();
+            var beforeClassTestMethods = new List<TestInfo>();
+            var afterClassTestMethods = new List<TestInfo>();
+            var beforeTestMethods = new List<TestInfo>();
+            var afterTestMethods = new List<TestInfo>();
+            var testMethods = new List<TestInfo>();
             GetTestMethods(type, beforeClassTestMethods, afterClassTestMethods, beforeTestMethods, afterTestMethods,
                 testMethods);
             
@@ -108,7 +108,7 @@ namespace MyNUnit
             }
             foreach (var test in tasks)
             {
-                lock(lockObject)
+                lock (lockObject)
                 {
                     var result = test.Result;
                     this.testResults.Add(result);
@@ -169,7 +169,7 @@ namespace MyNUnit
                 {
                     this.isBeforeCompleted = false;
                 }
-                lock(lockObject)
+                lock (lockObject)
                 {
                     this.testResults.Add(RunTest(beforeTest));
                 }
@@ -177,7 +177,7 @@ namespace MyNUnit
 
             if (this.isBeforeCompleted)
             {
-                lock(lockObject)
+                lock (lockObject)
                 {
                     this.testResults.Add(RunTest(test));
                 }
@@ -186,7 +186,7 @@ namespace MyNUnit
             foreach (var afterTest in afterTests)
             {
                 afterTest.Object = obj;
-                lock(lockObject)
+                lock (lockObject)
                 {
                     this.testResults.Add(RunTest(afterTest));
                 }
