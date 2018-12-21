@@ -14,7 +14,7 @@ namespace ServerFTP
 
             var server = new Server();
 
-            server.Work(port).Wait();
+            server.Work().Wait();
         }
     }
 }

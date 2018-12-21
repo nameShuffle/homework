@@ -18,8 +18,10 @@ namespace ServerFTP
         /// в котором выполняется обработка запросов, поступающих с клиента.
         /// </summary>
         /// <param name="port">Номер порта.</param>
-        public async Task Work(int port)
+        public async Task Work()
         {
+            int port = 5555;
+
             var listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
 
@@ -126,12 +128,12 @@ namespace ServerFTP
 
                 foreach (var subDir in directorysList)
                 {
-                    answer += $" {subDir.Name} - true ";
+                    answer += $" {subDir.Name} true ";
                 }
 
                 foreach (var file in filesList)
                 {
-                    answer += $" {file.Name} - false ";
+                    answer += $" {file.Name} false ";
                 }
                 await writer.WriteAsync(answer);
                 await writer.FlushAsync();

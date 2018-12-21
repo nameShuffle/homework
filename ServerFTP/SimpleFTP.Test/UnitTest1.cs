@@ -53,12 +53,12 @@ namespace SimpleFTP.Test
 
             foreach (var subDir in dir.GetDirectories())
             {
-                contentList += $" {subDir.Name} - true ";
+                contentList += $" {subDir.Name} true ";
             }
 
             foreach (var file in dir.GetFiles())
             {
-                contentList += $" {file.Name} - false ";
+                contentList += $" {file.Name} false ";
             }
 
             var server = new Server();

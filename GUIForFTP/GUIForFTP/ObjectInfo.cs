@@ -1,6 +1,9 @@
 ﻿
 namespace GUIForFTP
 {
+    /// <summary>
+    /// Класс инкапсулирует информацию об рассматриваемых объектах.
+    /// </summary>
     public class ObjectInfo
     {
         public ObjectInfo(bool isDir, string name)
