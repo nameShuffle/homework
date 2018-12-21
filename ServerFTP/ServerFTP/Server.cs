@@ -40,14 +40,16 @@ namespace ServerFTP
             var stream = new NetworkStream(socket);
 
             var reader = new StreamReader(stream);
-            var writer = new StreamWriter(stream);
 
             var request = await reader.ReadLineAsync();
 
+            var writer = new StreamWriter(stream);
+
             if (request[0] != '1' && request[0] != '2')
             {
-                await writer.WriteLineAsync("Неверный формат команды");
+                await writer.WriteAsync("Неверный формат команды");
                 await writer.FlushAsync();
+                socket.Close();
                 return;
             }
 
@@ -75,17 +77,24 @@ namespace ServerFTP
         /// <param name="writer">Позволяет записывать данные в нужный поток.</param>
         private async void GetFileContent(string filePath, StreamWriter writer)
         {
-            if (!File.Exists(filePath))
+            try
             {
-                await writer.WriteAsync("-1");
+                if (!File.Exists(filePath))
+                {
+                    await writer.WriteAsync("-1");
+                    await writer.FlushAsync();
+                    return;
+                }
+
+                byte[] content = File.ReadAllBytes(filePath);
+                long length = content.Length;
+                await writer.WriteAsync(length.ToString() + ' ' + Encoding.UTF8.GetString(content));
                 await writer.FlushAsync();
+            }
+            catch (SocketException ex)
+            {
                 return;
             }
-
-            byte[] content = File.ReadAllBytes(filePath);
-            long length = content.Length;
-            await writer.WriteAsync(length.ToString() + ' ' + Encoding.UTF8.GetString(content));
-            await writer.FlushAsync();
         }
 
         /// <summary>
@@ -97,33 +106,41 @@ namespace ServerFTP
         /// <param name="writer">Позволяет записывать в нужный поток данные.</param>
         private async void GetListOfFiles(string dirPath, StreamWriter writer)
         {
-            var dir = new DirectoryInfo(dirPath);
-
-            if (!dir.Exists)
+            try
             {
-                await writer.WriteAsync("-1");
+                var dir = new DirectoryInfo(dirPath);
+
+                if (!dir.Exists)
+                {
+                    await writer.WriteAsync("-1");
+                    await writer.FlushAsync();
+                    return;
+                }
+
+                var directorysList = dir.GetDirectories();
+                var filesList = dir.GetFiles();
+
+                int objectsNumber = directorysList.Length + filesList.Length;
+
+                var answer = objectsNumber.ToString();
+
+                foreach (var subDir in directorysList)
+                {
+                    answer += $" {subDir.Name} - true ";
+                }
+
+                foreach (var file in filesList)
+                {
+                    answer += $" {file.Name} - false ";
+                }
+                await writer.WriteAsync(answer);
                 await writer.FlushAsync();
+            }
+            catch
+            {
                 return;
             }
-
-            var directorysList = dir.GetDirectories();
-            var filesList = dir.GetFiles();
-
-            int objectsNumber = directorysList.Length + filesList.Length;
-
-            var answer = objectsNumber.ToString();
-
-            foreach (var subDir in directorysList)
-            {
-                answer += $" {subDir.Name} - true ";
-            }
-
-            foreach (var file in filesList)
-            {
-                answer += $" {file.Name} - false ";
-            }
-            await writer.WriteAsync(answer);
-            await writer.FlushAsync();
+            
         }
     }
 }
