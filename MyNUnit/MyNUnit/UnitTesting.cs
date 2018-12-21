@@ -12,6 +12,9 @@ namespace MyNUnit
         private List<TestResult> testResults = new List<TestResult>();
         private Object lockObject = new Object();
 
+        bool isBeforeClassCompleted = true;
+        bool isBeforeCompleted = true;
+
         /// <summary>
         /// Основной метод, активирует работу по запуску тестов по переданному пути.
         /// Если путь был введен неверно, сообщает об ошибке в консоль.
@@ -79,9 +82,13 @@ namespace MyNUnit
             List<TestInfo> testMethods = new List<TestInfo>();
             GetTestMethods(type, beforeClassTestMethods, afterClassTestMethods, beforeTestMethods, afterTestMethods,
                 testMethods);
-            StartTesting(beforeClassTestMethods, this.testResults);
-            StartTesting(testMethods, beforeTestMethods, afterTestMethods, this.testResults);
-            StartTesting(afterClassTestMethods, this.testResults);
+            
+            StartTesting(beforeClassTestMethods);
+            if(this.isBeforeClassCompleted)
+            {
+                StartTesting(testMethods, beforeTestMethods, afterTestMethods);
+            }
+            StartTesting(afterClassTestMethods);
         }
 
         /// <summary>
@@ -89,91 +96,99 @@ namespace MyNUnit
         /// </summary>
         /// <param name="tests">Тесты для запуска.</param>
         /// <param name="results">Список для сохранения результатов.</param>
-        private void StartTesting(List<TestInfo> tests, List<TestResult> results)
+        private void StartTesting(List<TestInfo> tests)
         {
             List<Task<TestResult>> tasks = new List<Task<TestResult>>();
+            
             foreach (var test in tests)
             {
                 var testTask = new Task<TestResult>(newTest => RunTest((TestInfo)newTest), test);
-                tasks.Add(testTask);
                 testTask.Start();
+                tasks.Add(testTask);
             }
             foreach (var test in tasks)
             {
                 lock(lockObject)
                 {
-                    results.Add(test.Result);
+                    var result = test.Result;
+                    this.testResults.Add(result);
+                    if (!result.IsOk)
+                    {
+                        this.isBeforeClassCompleted = false;
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Перегруженный метод, используется для запуска основных тестов методов.
-        /// При каждом запуске основного тестового метода производится запуск методов, 
-        /// помеченных атрибутом Before. После заапуска каждого основного тестового метода
-        /// производится запуск методов, помеченных атрибутом After.
+        /// Перегруженный метод, используется для параллельного 
+        /// запуска основных тестов методов.
         /// </summary>
         /// <param name="tests">Основные тесты.</param>
         /// <param name="beforeTests">Методы, помеченные атрибутом Before.</param>
         /// <param name="afterTests">Методы, помеченные атрибутом After.</param>
-        /// <param name="results">Список для сохранения результатов.</param>
         private void StartTesting(List<TestInfo> tests, List<TestInfo> beforeTests, 
-            List<TestInfo> afterTests, List<TestResult> results)
+            List<TestInfo> afterTests)
         {
-            List<Task<TestResult>> tasks = new List<Task<TestResult>>();
-            List<Task<TestResult>> beforeTasks = new List<Task<TestResult>>();
-            List<Task<TestResult>> afterTasks = new List<Task<TestResult>>();
-            foreach (var beforeTest in beforeTests)
-            {
-                var testTask = new Task<TestResult>(newTest => RunTest((TestInfo)newTest), beforeTest);
-                beforeTasks.Add(testTask);
-            }
-            foreach (var afterTest in afterTests)
-            {
-                var testTask = new Task<TestResult>(newTest => RunTest((TestInfo)newTest), afterTest);
-                beforeTasks.Add(testTask);
-            }
+            List<Task> tasks = new List<Task>();
+
             foreach (var test in tests)
             {
-                foreach (var beforeTask in beforeTasks)
-                {
-                    beforeTask.Start();
-                }
-                foreach (var beforeTask in beforeTasks)
-                {
-                    beforeTask.Wait();
-                }
-                var testTask = new Task<TestResult>(newTest => RunTest((TestInfo)newTest), test);
+                var testTask = new Task(() => RunBeforeAfterAndTest(test, beforeTests, afterTests));
                 tasks.Add(testTask);
                 testTask.Start();
-                foreach (var afterTask in afterTasks)
-                {
-                    afterTask.Start();
-                }
-                foreach (var afterTask in afterTasks)
-                {
-                    afterTask.Wait();
-                }
             }
-            foreach (var beforeTask in beforeTasks)
-            {
-                lock (lockObject)
-                {
-                    results.Add(beforeTask.Result);
-                }
-            }
-            foreach (var afterTask in afterTasks)
-            {
-                lock(lockObject)
-                {
-                    results.Add(afterTask.Result);
-                }
-            }
+
             foreach (var task in tasks)
             {
+                task.Wait();
+            }
+        }
+
+
+        /// <summary>
+        /// Метод, подготавливащий основной тест к работе.
+        /// При каждом запуске основного тестового метода производится запуск методов, 
+        /// помеченных атрибутом Before. После запуска каждого основного тестового метода
+        /// производится запуск методов, помеченных атрибутом After.
+        /// </summary>
+        /// <param name="test"></param>
+        /// <param name="beforeTests"></param>
+        /// <param name="afterTests"></param>
+        private void RunBeforeAfterAndTest(TestInfo test, List<TestInfo> beforeTests,
+            List<TestInfo> afterTests)
+        {
+            object obj = Activator.CreateInstance(test.TestType);
+            test.Object = obj;
+
+            foreach (var beforeTest in beforeTests)
+            {
+                beforeTest.Object = obj;
+                var result = RunTest(beforeTest);
+                if (!result.IsOk)
+                {
+                    this.isBeforeCompleted = false;
+                }
                 lock(lockObject)
                 {
-                    results.Add(task.Result);
+                    this.testResults.Add(RunTest(beforeTest));
+                }
+            }
+
+            if (this.isBeforeCompleted)
+            {
+                lock(lockObject)
+                {
+                    this.testResults.Add(RunTest(test));
+                }
+            }
+
+            foreach (var afterTest in afterTests)
+            {
+                afterTest.Object = obj;
+                lock(lockObject)
+                {
+                    this.testResults.Add(RunTest(afterTest));
                 }
             }
         }
@@ -185,7 +200,7 @@ namespace MyNUnit
         /// <returns>Возвращает результат выполнения теста в виде TestResult.</returns>
         private TestResult RunTest(TestInfo test)
         {
-            var result = new TestResult(test.TestType.GetType().Name, test.TestMethod.Name);
+            var result = new TestResult(test.TestType.Name, test.TestMethod.Name);
             if (test.Attr.GetType() == typeof(TestAttribute))
             {
                 if (((TestAttribute)test.Attr).Ignore != null)
@@ -199,7 +214,15 @@ namespace MyNUnit
             Stopwatch stopwatch = Stopwatch.StartNew();
             try
             {
-                test.TestMethod.Invoke(test.TestType, null);   
+                if (test.Attr.GetType() == typeof(BeforeClassAttribute)
+                    || test.Attr.GetType() == typeof(AfterClassAttribute))
+                {
+                    test.TestMethod.Invoke(test.TestType, null);
+                }
+                else
+                {
+                    test.TestMethod.Invoke(test.Object, null);
+                }
                 
                 result.IsOk = true;
             }
@@ -255,40 +278,69 @@ namespace MyNUnit
         private void GetTestMethods(Type type, List<TestInfo> beforeClassTestMethods,
             List<TestInfo> afterClassTestMethods, List<TestInfo> beforeTestMethods,
             List<TestInfo> afterTestMethods, List<TestInfo> testMethods)
-        {
-            object obj = Activator.CreateInstance(type);
-
+        { 
             foreach (var method in type.GetMethods())
             {
                 foreach (var attr in Attribute.GetCustomAttributes(method))
                 {
                     if (attr.GetType() == typeof(BeforeClassAttribute))
                     {
-                        var test = new TestInfo(method, obj, attr);
-                        beforeClassTestMethods.Add(test);
+                        if (method.IsStatic)
+                        {
+                            var test = new TestInfo(method, type, attr);
+                            beforeClassTestMethods.Add(test);
+                        }
+                        else
+                        {
+                            var result = new TestResult(type.Name, method.Name)
+                            {
+                                IsOk = false,
+                                RealException = new Exception("BeforeClass Test wasn't static")
+                            };
+                            this.isBeforeClassCompleted = false;
+                            lock(lockObject)
+                            {
+                                this.testResults.Add(result);
+                            }
+                        }
                     }
 
                     if (attr.GetType() == typeof(AfterClassAttribute))
                     {
-                        var test = new TestInfo(method, obj, attr);
-                        afterClassTestMethods.Add(test);
+                        if (method.IsStatic)
+                        {
+                            var test = new TestInfo(method, type, attr);
+                            afterClassTestMethods.Add(test);
+                        }
+                        else
+                        {
+                            var result = new TestResult(type.Name, method.Name)
+                            {
+                                IsOk = false,
+                                RealException = new Exception("After Class Test wasn't static")
+                            };
+                            lock(lockObject)
+                            {
+                                this.testResults.Add(result);
+                            }
+                        }
                     }
 
                     if (attr.GetType() == typeof(BeforeAttribute))
                     {
-                        var test = new TestInfo(method, obj, attr);
+                        var test = new TestInfo(method, type, attr);
                         beforeTestMethods.Add(test);
                     }
 
                     if (attr.GetType() == typeof(AfterAttribute))
                     {
-                        var test = new TestInfo(method, obj, attr);
+                        var test = new TestInfo(method, type, attr);
                         afterTestMethods.Add(test);
                     }
 
                     if (attr.GetType() == typeof(TestAttribute))
                     {
-                        var test = new TestInfo(method, obj, attr);
+                        var test = new TestInfo(method, type, attr);
                         testMethods.Add(test);
                     }
                 }

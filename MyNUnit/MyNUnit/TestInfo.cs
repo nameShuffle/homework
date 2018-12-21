@@ -8,7 +8,7 @@ namespace MyNUnit
     /// </summary>
     public class TestInfo
     {
-        public TestInfo(MethodInfo method, object type, Attribute attr)
+        public TestInfo(MethodInfo method, Type type, Attribute attr)
         {
             this.TestMethod = method;
             this.TestType = type;
@@ -16,7 +16,8 @@ namespace MyNUnit
         }
 
         public MethodInfo TestMethod { get; }
-        public object TestType { get; }
+        public Type TestType { get; }
         public Attribute Attr { get; }
+        public object Object { set;  get; }
     }
 }

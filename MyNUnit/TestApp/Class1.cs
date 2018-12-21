@@ -5,7 +5,7 @@ namespace TestApp
 {
     public class Class1
     {
-        private int test = 1;
+        private int test = 0;
 
         [Test(Expected = typeof(DivideByZeroException))]
         public void TestMethod()
@@ -27,15 +27,15 @@ namespace TestApp
         }
 
         [BeforeClass]
-        public void SubTest()
+        public static string SubTest()
         {
-            test -= 1;
+            return "its beforeclass test";
         }
 
         [AfterClass]
-        public void AddTest()
+        public static string AddTest()
         {
-            test += 1;
+            return "its beforeclass test";
         }
     }
 }

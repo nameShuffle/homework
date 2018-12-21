@@ -15,36 +15,44 @@ namespace MyNUnit
             UnitTesting testingSystem = new UnitTesting();
             results = testingSystem.StartUnitTesting(path);
 
-            //вывод на консоль результатов 
-            foreach (var result in results)
+            if (results != null)
             {
-                Console.WriteLine();
-                Console.WriteLine($"Test Class : {result.TypeName}");
-                Console.WriteLine($" Test Name : {result.TestName}");
-                if (result.WhyIgnored != null)
+                //вывод на консоль результатов 
+                foreach (var result in results)
                 {
-                    Console.WriteLine($" Test was ignored : {result.WhyIgnored}");
-                    continue;
+                    Console.WriteLine();
+                    Console.WriteLine($"Test Class : {result.TypeName}");
+                    Console.WriteLine($" Test Name : {result.TestName}");
+                    if (result.WhyIgnored != null)
+                    {
+                        Console.WriteLine($" Test was ignored : {result.WhyIgnored}");
+                        continue;
+                    }
+
+                    if (result.IsOk)
+                    {
+                        Console.WriteLine($" Test Status : test successfully completed");
+                        if (result.Expected != null)
+                        {
+                            Console.WriteLine($" Expected exception : {result.Expected.Name}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($" Test Status : test completed with exceptions");
+                        if (result.Expected != null)
+                        {
+                            Console.WriteLine($" Expected exception : {result.Expected.Name}");
+                        }
+                        Console.WriteLine($" Exception : {result.RealException.GetType().Name}");
+                        if (result.RealException.Message != null)
+                        {
+                            Console.WriteLine($" Message : {result.RealException.Message}");
+                        }
+                    }
+                    Console.WriteLine($" Time : {result.Time}");
                 }
 
-                if (result.IsOk)
-                {
-                    Console.WriteLine($" Test Status : test successfully completed");
-                    if (result.Expected != null)
-                    {
-                        Console.WriteLine($" Expected exception : {result.Expected.Name}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($" Test Status : test completed with exceptions");
-                    if (result.Expected != null)
-                    {
-                        Console.WriteLine($" Expected exception : {result.Expected.Name}");
-                    }
-                    Console.WriteLine($" Exception : {result.RealException.GetType().Name}");
-                }
-                Console.WriteLine($" Time : {result.Time}");
             }
 
             Console.ReadKey();

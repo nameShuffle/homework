@@ -111,31 +111,5 @@ namespace TestMyNUnit
             }
         }
 
-        [Fact]
-        public void TwoClassesTest()
-        {
-            string path = GetDirectory("/TestApp2/TestApp2/bin/Debug");
-            UnitTesting testingSystem = new UnitTesting();
-            var results = testingSystem.StartUnitTesting(path);
-            string firstClass = results[0].TypeName;
-            string secondClass = "";
-            foreach (var result in results)
-            {
-                if (result.TypeName != firstClass)
-                {
-                    secondClass = result.TypeName;
-                    break;
-                }
-            }
-            if (firstClass == "TestClass1")
-            {
-                Assert.Equal(secondClass, "TestClass2");
-            }
-            else
-            {
-                Assert.Equal(secondClass, "TestClass1");
-                Assert.Equal(firstClass, "TestClass2");
-            }
-        }
     }
 }
