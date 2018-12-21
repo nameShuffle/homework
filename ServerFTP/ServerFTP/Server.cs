@@ -10,7 +10,7 @@ namespace ServerFTP
     /// Класс, предоставляющий возможность создания сервера и корректной обработки
     /// запросов, поступающих с клиента.
     /// </summary>
-    class Server
+    public class Server
     {
         /// <summary>
         /// Главный метод, реализующий логику работы сервера. 
@@ -18,14 +18,14 @@ namespace ServerFTP
         /// в котором выполняется обработка запросов, поступающих с клиента.
         /// </summary>
         /// <param name="port">Номер порта.</param>
-        public void Work(int port)
+        public async Task Work(int port)
         {
             var listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
 
             while (true)
             {
-                var socket = listener.AcceptSocketAsync();
+                var socket = await listener.AcceptSocketAsync();
                 var manager = new Task(clientSocket => ManageRequest((Socket)clientSocket), socket);
                 manager.Start();
             }
@@ -35,7 +35,7 @@ namespace ServerFTP
         /// Метод позволяет корректно обрабатывать команды подключившегося клиента.
         /// Распознает тип команды и вызывает метод, требуемый для выполнения задачи.
         /// </summary>
-        public async void ManageRequest(Socket socket)
+        private async void ManageRequest(Socket socket)
         {
             var stream = new NetworkStream(socket);
 
@@ -110,18 +110,19 @@ namespace ServerFTP
             var filesList = dir.GetFiles();
 
             int objectsNumber = directorysList.Length + filesList.Length;
-            await writer.WriteAsync(objectsNumber.ToString() + ' ');
-            await writer.FlushAsync();
+
+            var answer = objectsNumber.ToString();
 
             foreach (var subDir in directorysList)
             {
-                await writer.WriteAsync(subDir.Name + " - true ");
+                answer += $" {subDir.Name} - true ";
             }
 
-            foreach (var files in filesList)
+            foreach (var file in filesList)
             {
-                await writer.WriteAsync(files.Name + " - false ");
+                answer += $" {file.Name} - false ";
             }
+            await writer.WriteAsync(answer);
             await writer.FlushAsync();
         }
     }

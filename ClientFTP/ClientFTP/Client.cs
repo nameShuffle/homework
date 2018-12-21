@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace ClientFTP
 {
@@ -8,7 +9,7 @@ namespace ClientFTP
     /// Класс, реализующий логику клиентской стороны. Позволяет подключаться
     /// к серверу и передавать ему запросы, введенные с клавиатуры.
     /// </summary>
-    class Client
+    public class Client
     {
         /// <summary>
         /// Основной метод, описывающий логику работы клиента. Предлагает пользователю
@@ -19,32 +20,30 @@ namespace ClientFTP
         /// запроса, и выводит ее на экран.
         /// </summary>
         /// <param name="port">Номер порта.</param>
-        public async void Work(int port)
+        public async Task<string> GetResponce(int port, string command)
         {
-            while (true)
+            string data = null;
+
+            try
             {
-                string command = Console.ReadLine();
-
-                try
+                using (var client = new TcpClient("localhost", port))
                 {
-                    using (var client = new TcpClient("localhost", port))
-                    {
-                        var stream = client.GetStream();
+                    var stream = client.GetStream();
 
-                        var writer = new StreamWriter(stream);
-                        var reader = new StreamReader(stream);
+                    var writer = new StreamWriter(stream);
+                    var reader = new StreamReader(stream);
 
-                        await writer.WriteLineAsync(command);
-                        await writer.FlushAsync();
+                    await writer.WriteLineAsync(command);
+                    await writer.FlushAsync();
 
-                        string data = await reader.ReadToEndAsync();
-                        Console.WriteLine(data);
-                    }
+                    data = await reader.ReadToEndAsync();
+                    return data;
                 }
-                catch (SocketException ex)
-                {
-                    Console.WriteLine("Ошибка подключения к серверу");
-                }
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine("Ошибка подключения к серверу");
+                return data;
             }
         }
     }

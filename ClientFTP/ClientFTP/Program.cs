@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Net.Sockets;
 
 namespace ClientFTP
 {
@@ -12,7 +10,17 @@ namespace ClientFTP
 
             var client = new Client();
 
-            client.Work(port);
+            while (true)
+            {
+                string command = Console.ReadLine();
+                if (command == "exit")
+                {
+                    return;
+                }
+                var responce = client.GetResponce(port, command);
+                string answer = responce.Result;
+                Console.WriteLine(answer);
+            } 
         }
     }
 }
