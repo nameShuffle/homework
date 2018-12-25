@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUIForFTP", "GUIForFTP\GUIForFTP.csproj", "{D4528F40-28DE-4395-ABED-9E78CA8D839A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerFTP", "..\ServerFTP\ServerFTP\ServerFTP.csproj", "{CFAEEC62-C25A-4B4B-B89B-7279A55CB0B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D4528F40-28DE-4395-ABED-9E78CA8D839A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4528F40-28DE-4395-ABED-9E78CA8D839A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4528F40-28DE-4395-ABED-9E78CA8D839A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFAEEC62-C25A-4B4B-B89B-7279A55CB0B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFAEEC62-C25A-4B4B-B89B-7279A55CB0B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFAEEC62-C25A-4B4B-B89B-7279A55CB0B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFAEEC62-C25A-4B4B-B89B-7279A55CB0B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

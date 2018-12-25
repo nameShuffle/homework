@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -42,10 +43,18 @@ namespace ServerFTP
             var stream = new NetworkStream(socket);
 
             var reader = new StreamReader(stream);
+            var writer = new StreamWriter(stream);
 
             var request = await reader.ReadLineAsync();
 
-            var writer = new StreamWriter(stream);
+            if (request == "startconnection")
+            {
+                var dir = (new DirectoryInfo(Directory.GetCurrentDirectory())).Parent.Parent.Parent.Parent;
+                await writer.WriteAsync(dir.FullName);
+                await writer.FlushAsync();
+                socket.Close();
+                return;
+            }
 
             if (request[0] != '1' && request[0] != '2')
             {
@@ -89,11 +98,14 @@ namespace ServerFTP
                 }
 
                 byte[] content = File.ReadAllBytes(filePath);
+                //string content = File.ReadAllText(filePath);
+                var stringcontent = Encoding.UTF8.GetString(content);
                 long length = content.Length;
                 await writer.WriteAsync(length.ToString() + ' ' + Encoding.UTF8.GetString(content));
+                //await writer.WriteAsync(length.ToString() + ' ' + content);
                 await writer.FlushAsync();
             }
-            catch (SocketException ex)
+            catch (Exception ex)
             {
                 return;
             }
@@ -128,12 +140,12 @@ namespace ServerFTP
 
                 foreach (var subDir in directorysList)
                 {
-                    answer += $" {subDir.Name} true ";
+                    answer += $"\n{subDir.Name}\ntrue";
                 }
 
                 foreach (var file in filesList)
                 {
-                    answer += $" {file.Name} false ";
+                    answer += $"\n{file.Name}\nfalse";
                 }
                 await writer.WriteAsync(answer);
                 await writer.FlushAsync();

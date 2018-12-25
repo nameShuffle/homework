@@ -30,13 +30,23 @@ namespace GUIForFTP
                 {
                     var stream = client.GetStream();
 
-                    var writer = new StreamWriter(stream);
-                    var reader = new StreamReader(stream);
-
+                    var writer = new StreamWriter(stream); 
+                 
                     await writer.WriteLineAsync(command);
                     await writer.FlushAsync();
 
+                    var reader = new StreamReader(stream);
+
+                    /*string newData = await reader.ReadToEndAsync();
+                    data = "";
+                    while (newData != "")
+                    {
+                        data += newData;
+                        newData = await reader.ReadToEndAsync();
+                    }*/
+
                     data = await reader.ReadToEndAsync();
+
                     return data;
                 }
             }
