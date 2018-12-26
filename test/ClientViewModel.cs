@@ -1,33 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows.Threading;
-
-namespace GUIForFTP
-{
-    class ClientViewModel
-    {
-        private string currentDirectory;
-        private string finalDirectory;
-        
-        private Client client = new Client();
-
-        private Object lockObject = new Object();
-
-        public ObservableCollection<ObjectInfo> Objects { get; private set; } = new ObservableCollection<ObjectInfo>();
-        public ObservableCollection<string> DownloadList { get; private set; } = new ObservableCollection<string>();
-
-        public string Warning { get; private set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Отправляет начальный запрос от клиента с просьбой вернуть список
-        /// объектов в директории homework.
+тории homework.
         /// </summary>
         public async Task StartConnection(int port, string addres)
         {

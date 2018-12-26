@@ -72,7 +72,7 @@ namespace ServerFTP
             else
             {
                 var filePath = request.Substring(2);
-                GetFileContent(filePath, writer);
+                GetFileContent(filePath, writer, stream);
             }
 
             socket.Close();
@@ -86,28 +86,27 @@ namespace ServerFTP
         /// </summary>
         /// <param name="filePath">Путь к файлу.</param>
         /// <param name="writer">Позволяет записывать данные в нужный поток.</param>
-        private async void GetFileContent(string filePath, StreamWriter writer)
+        private async void GetFileContent(string filePath, StreamWriter writer, NetworkStream stream)
         {
             try
             {
                 if (!File.Exists(filePath))
                 {
-                    await writer.WriteAsync("-1");
+                    await writer.WriteLineAsync("-1");
                     await writer.FlushAsync();
                     return;
                 }
 
-                byte[] content = File.ReadAllBytes(filePath);
-                //string content = File.ReadAllText(filePath);
-                var stringcontent = Encoding.UTF8.GetString(content);
-                long length = content.Length;
-                await writer.WriteAsync(length.ToString() + ' ' + Encoding.UTF8.GetString(content));
-                //await writer.WriteAsync(length.ToString() + ' ' + content);
-                await writer.FlushAsync();
+                var fileLength = (new FileInfo(filePath)).Length;
+                await writer.WriteLineAsync(fileLength.ToString());
+                using (FileStream fileStream = File.OpenRead(filePath))
+                {
+                    fileStream.CopyTo(stream);
+                }
             }
-            catch (Exception ex)
+            catch
             {
-                return;
+                Console.WriteLine("Не удается передать информацию. Возможно, разорвано соединение.");
             }
         }
 
@@ -126,7 +125,7 @@ namespace ServerFTP
 
                 if (!dir.Exists)
                 {
-                    await writer.WriteAsync("-1");
+                    await writer.WriteLineAsync("-1");
                     await writer.FlushAsync();
                     return;
                 }
@@ -152,7 +151,7 @@ namespace ServerFTP
             }
             catch
             {
-                return;
+                Console.WriteLine("Не удается передать информацию. Возможно, разорвано соединение.");
             }
             
         }
