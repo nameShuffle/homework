@@ -43,7 +43,7 @@ namespace GUIForFTP
 
                 SetInfoToListOfObjects(response);
             }
-            catch (ObjectDisposedException ex)
+            catch (Exception ex)
             {
                 this.Warning = ex.Message;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
@@ -64,12 +64,7 @@ namespace GUIForFTP
                 var response = await Task.Run(() => client.GetDirectoryList(port, addres, command));
                 SetInfoToListOfObjects(response);
             }
-            catch (DirectoryNotFoundException ex)
-            {
-                this.Warning = ex.Message;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
-            }
-            catch (ObjectDisposedException ex)
+            catch (Exception ex)
             {
                 this.Warning = ex.Message;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
@@ -128,12 +123,7 @@ namespace GUIForFTP
                 await dispatcher.InvokeAsync(() => this.DownloadList.Add($"{file.Name} download finished"));
                 
             }
-            catch (FileNotFoundException ex)
-            {
-                this.Warning = ex.Message;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
-            }
-            catch (ObjectDisposedException ex)
+            catch (Exception ex)
             {
                 this.Warning = ex.Message;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));

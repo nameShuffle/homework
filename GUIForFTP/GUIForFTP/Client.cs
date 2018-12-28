@@ -36,15 +36,19 @@ namespace GUIForFTP
 
                     if (data == "-1")
                     {
-                        throw new DirectoryNotFoundException("Указанной директории не существует!");
+                        throw new Exception("Указанной директории не существует!");
                     }
 
                     return data;
                 }
             }
+            catch (SocketException)
+            {
+                throw new Exception("Не удается подключиться к серверу!");
+            }
             catch (ObjectDisposedException)
             {
-                throw new ObjectDisposedException("Не удается получить информацию от сервера!");
+                throw new Exception("Не удается получить информацию от сервера!");
             }
         }
 
@@ -70,7 +74,7 @@ namespace GUIForFTP
                     var response = await reader.ReadLineAsync();
                     if (response == "-1")
                     {
-                        throw new FileNotFoundException("Указанного файла не существует!");
+                        throw new Exception("Указанного файла не существует!");
                     }
 
                     var fileStream = File.OpenWrite(pathToDownload);
@@ -79,9 +83,13 @@ namespace GUIForFTP
                     fileStream.Close();
                 }
             }
+            catch (SocketException)
+            {
+                throw new Exception("Не удается подключиться к серверу!");
+            }
             catch (ObjectDisposedException)
             {
-                throw new ObjectDisposedException("Не удается получить информацию от сервера!");
+                throw new Exception("Не удается получить информацию от сервера!");
             }
 
         }
