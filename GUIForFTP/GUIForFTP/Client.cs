@@ -36,15 +36,15 @@ namespace GUIForFTP
 
                     if (data == "-1")
                     {
-                        throw new Exception();
+                        throw new DirectoryNotFoundException("Указанной директории не существует!");
                     }
 
                     return data;
                 }
             }
-            catch
+            catch (ObjectDisposedException)
             {
-                throw new Exception("Не удается получить информацию от сервера!");
+                throw new ObjectDisposedException("Не удается получить информацию от сервера!");
             }
         }
 
@@ -53,7 +53,6 @@ namespace GUIForFTP
         /// </summary>
         /// <param name="command">Команда, сформированная для работы с сервером.</param>
         /// <param name="pathToDownload">Путь для скачивания файлов.</param>
-        /// <returns></returns>
         public async Task DownloadFile(int port, string addres, string command, string pathToDownload)
         {
             try
@@ -68,10 +67,10 @@ namespace GUIForFTP
                     await writer.FlushAsync();
                     
                     var reader = new StreamReader(stream);
-                    var responce = await reader.ReadLineAsync();
-                    if (responce == "-1")
+                    var response = await reader.ReadLineAsync();
+                    if (response == "-1")
                     {
-                        throw new Exception();
+                        throw new FileNotFoundException("Указанного файла не существует!");
                     }
 
                     var fileStream = File.OpenWrite(pathToDownload);
@@ -80,9 +79,9 @@ namespace GUIForFTP
                     fileStream.Close();
                 }
             }
-            catch
+            catch (ObjectDisposedException)
             {
-                throw new Exception("Не удается скачать файл! Проверьте корректность введенных данных.");
+                throw new ObjectDisposedException("Не удается получить информацию от сервера!");
             }
 
         }

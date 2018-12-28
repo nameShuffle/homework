@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -9,14 +7,12 @@ using System.Windows.Threading;
 
 namespace GUIForFTP
 {
-    class ClientViewModel
+    class ClientViewModel : INotifyPropertyChanged
     {
         private string currentDirectory;
         private string finalDirectory;
         
         private Client client = new Client();
-
-        private Object lockObject = new Object();
 
         public ObservableCollection<ObjectInfo> Objects { get; private set; } = new ObservableCollection<ObjectInfo>();
         public ObservableCollection<string> DownloadList { get; private set; } = new ObservableCollection<string>();
@@ -43,11 +39,11 @@ namespace GUIForFTP
                 this.finalDirectory = dirFromServer;
 
                 var command = $"1 {dirFromServer}";
-                var responce = await Task.Run(() => client.GetDirectoryList(port, addres, command));
+                var response = await Task.Run(() => client.GetDirectoryList(port, addres, command));
 
-                SetInfoToListOfObjects(responce);
-            } 
-            catch (Exception ex)
+                SetInfoToListOfObjects(response);
+            }
+            catch (ObjectDisposedException ex)
             {
                 this.Warning = ex.Message;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
@@ -63,9 +59,21 @@ namespace GUIForFTP
         {
             this.currentDirectory = path;
             var command = $"1 {path}";
-            var responce = await Task.Run(() => client.GetDirectoryList(port, addres, command));
-
-            SetInfoToListOfObjects(responce);
+            try
+            {
+                var response = await Task.Run(() => client.GetDirectoryList(port, addres, command));
+                SetInfoToListOfObjects(response);
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                this.Warning = ex.Message;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
+            }
+            catch (ObjectDisposedException ex)
+            {
+                this.Warning = ex.Message;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
+            }
         }
 
         /// <summary>
@@ -109,26 +117,26 @@ namespace GUIForFTP
             try
             {
                 var newFileToDownload = $"{file.Name} downloading...";
-                lock (lockObject)
-                {
-                    dispatcher.InvokeAsync(() => this.DownloadList.Add(newFileToDownload));
-                }
-
+                
+                await dispatcher.InvokeAsync(() => this.DownloadList.Add(newFileToDownload));
+                
                 var command = $"2 {file.FullPath}";
                 var filePath = pathToDownload + $"/{file.Name}";
                 await Task.Run(() => client.DownloadFile(port, addres, command, filePath));
-
-                lock (lockObject)
-                {
-                    dispatcher.InvokeAsync(() => this.DownloadList.Remove(newFileToDownload));
-                    dispatcher.InvokeAsync(() => this.DownloadList.Add($"{file.Name} download finished"));
-                }
+                
+                await dispatcher.InvokeAsync(() => this.DownloadList.Remove(newFileToDownload));
+                await dispatcher.InvokeAsync(() => this.DownloadList.Add($"{file.Name} download finished"));
+                
             }
-            catch (Exception ex)
+            catch (FileNotFoundException ex)
             {
                 this.Warning = ex.Message;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
-                await dispatcher.InvokeAsync(() => this.DownloadList.Clear());
+            }
+            catch (ObjectDisposedException ex)
+            {
+                this.Warning = ex.Message;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
             }
         }
 

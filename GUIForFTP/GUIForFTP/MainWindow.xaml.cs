@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 
 namespace GUIForFTP
@@ -56,7 +55,7 @@ namespace GUIForFTP
         /// Аналогично если выделенный элемент - директория. Если это файл, то
         /// производится скачивание этого файла.
         /// </summary>
-        private async void ButtonDownload_Click(object sender, RoutedEventArgs e)
+        private void ButtonDownload_Click(object sender, RoutedEventArgs e)
         {
             var item = ObjectsList.SelectedItem;
             if (item != null)
@@ -75,7 +74,7 @@ namespace GUIForFTP
         /// Обработчик нажатия на кнопку "скачать все". Производится скачивание
         /// всех файлов, лежащих в текущей директории.
         /// </summary>
-        private async void ButtonDownloadAll_Click(object sender, RoutedEventArgs e)
+        private void ButtonDownloadAll_Click(object sender, RoutedEventArgs e)
         {
             (DataContext as ClientViewModel).DownloadAllFiles(this.currentPort,
                 this.currentAddres, PathToDownload.Text.ToString(), Dispatcher);

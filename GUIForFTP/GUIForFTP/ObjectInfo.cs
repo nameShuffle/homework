@@ -1,5 +1,4 @@
-﻿
-namespace GUIForFTP
+﻿namespace GUIForFTP
 {
     /// <summary>
     /// Класс инкапсулирует информацию об рассматриваемых объектах.
