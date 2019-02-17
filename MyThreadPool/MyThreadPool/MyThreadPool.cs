@@ -20,6 +20,7 @@ namespace MyThreadPool
         private CancellationToken token;
 
         private AutoResetEvent readyTask;
+        private AutoResetEvent allTasksCanceled;
 
         /// <summary>
         /// Конструктор класса создает указанное количество потоков,
@@ -34,6 +35,7 @@ namespace MyThreadPool
             this.token = cancelTokenSource.Token;
 
             this.readyTask = new AutoResetEvent(false);
+            this.allTasksCanceled = new AutoResetEvent(false);
 
             for (int i = 0; i < threadsNumber; i++)
             {
@@ -74,11 +76,14 @@ namespace MyThreadPool
                 if (newTask)
                 {
                     freeTask();
-                    newTask = false;
                 }
 
                 if (this.token.IsCancellationRequested)
                 {
+                    if (ThreadsCount() == 1)
+                    {
+                        this.allTasksCanceled.Set();
+                    }
                     this.readyTask.Set();
                     return;
                 }
@@ -120,7 +125,9 @@ namespace MyThreadPool
             foreach (var thread in this.threads)
             {
                 if (thread.IsAlive)
+                {
                     count++;
+                }
             }
 
             return count;
@@ -132,6 +139,8 @@ namespace MyThreadPool
         public void Shutdown()
         {
             this.cancelTokenSource.Cancel();
+            this.readyTask.Set();
+            this.allTasksCanceled.WaitOne();
         }
 
         /// <summary>
@@ -155,8 +164,6 @@ namespace MyThreadPool
             private bool error;
             private Exception exception;
 
-            private Action start;
-
             private ManualResetEvent ready;
 
             /// <summary>
@@ -172,7 +179,6 @@ namespace MyThreadPool
             {
                 this.task = func;
                 this.isCompleted = false;
-                this.start = StartFunction;
                 this.pool = pool;
                 this.continueQueue = new Queue<Action>();
                 this.error = false;
@@ -188,37 +194,32 @@ namespace MyThreadPool
             /// <summary>
             /// Свойство, возвращает Action с нужной задачей
             /// </summary>
-            public Action Start => start;
-
-            /// <summary>
-            /// Данная функция запускает вычисление задачи. Вызывается свободным потоком
-            /// из пула потоков, когда он забирает задачу себе.
-            /// </summary>
-            public void StartFunction()
-            {
-                try
+            public Action Start =>
+                () =>
                 {
-                    this.result = this.task();
-                }
-                catch (Exception e)
-                {
-                    this.error = true;
-                    this.exception = e;
-                }
+                    try
+                    {
+                        this.result = this.task();
+                    }
+                    catch (Exception e)
+                    {
+                        this.error = true;
+                        this.exception = e;
+                    }
 
-                this.isCompleted = true;
-                ready.Set();
+                    this.isCompleted = true;
+                    ready.Set();
 
-                while (continueQueue.Count != 0)
-                {
                     lock (this.lockObject)
                     {
-                        Action continueTask = continueQueue.Dequeue();
-                        this.pool.tasks.Enqueue(continueTask);
-                        this.pool.readyTask.Set();
+                        while (continueQueue.Count != 0)
+                        {
+                            Action continueTask = continueQueue.Dequeue();
+                            this.pool.tasks.Enqueue(continueTask);
+                            this.pool.readyTask.Set();
+                        }
                     }
-                }
-            }
+                };
 
             /// <summary>
             /// Функция, которая позволяет пользователю получить результат
@@ -256,25 +257,22 @@ namespace MyThreadPool
                     return func(arg);
                 }
 
-                var continueTask = new MyTask<TNewResult>(ContinueFunction, this.pool);
-
-                if (this.IsCompleted)
+                lock (this.lockObject)
                 {
-                    lock (this.lockObject)
+                    if (this.IsCompleted)
                     {
-                        this.pool.tasks.Enqueue(continueTask.Start);
-                        this.pool.readyTask.Set();
+                        var continueTask = this.pool.AddTask(ContinueFunction);
+                        return continueTask;
                     }
-                }
-                else
-                {
-                    lock (this.lockObject)
+                    else
                     {
+                        var continueTask = new MyTask<TNewResult>(ContinueFunction, this.pool);
+
                         this.continueQueue.Enqueue(continueTask.Start);
+
+                        return continueTask;
                     }
                 }
-
-                return continueTask;
             }
         }
     }
