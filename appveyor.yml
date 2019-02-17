@@ -1,4 +1,4 @@
-    
+
 version: 1.0.{build}
 
 image: Visual Studio 2017
@@ -16,11 +16,7 @@ for:
 
   before_build:
     - cmd: nuget restore Lazy/Lazy.sln
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> simpleFTP
   build_script:
     - msbuild Lazy/Lazy.sln
 
@@ -33,6 +29,10 @@ for:
     matrix:
      - solution_name: ServerFTP/ServerFTP.sln    
      - solution_name: ClientFTP/ClientFTP.sln
+     
+  before_build:
+    - cmd: nuget restore ServerFTP/ServerFTP.sln
+    - cmd: nuget restore ClientFTP/ClientFTP.sln
   
   build_script:
     - msbuild ServerFTP/ServerFTP.sln   
@@ -41,8 +41,22 @@ for:
 -
   branches:
     only:
-      - myThreadPool
+      - MyNUnit
+
+  environment:
+    matrix:
+     - solution_name: MyNUnit/MyNUnit.sln
   
+  before_build:
+    - cmd: nuget restore MyNUnit/MyNUnit.sln
+    
+  build_script:
+    - msbuild MyNUnit/MyNUnit.sln
+
+-
+  branches:
+    only:
+      - myThreadPool 
   environment:
       matrix:
         - solution_name: myThreadPool/myThreadPool.sln
@@ -51,8 +65,4 @@ for:
     - cmd: nuget restore myThreadPool/myThreadPool.sln
 
   build_script:
-<<<<<<< HEAD
     - msbuild myThreadPool/myThreadPool.sln
-=======
-    - msbuild myThreadPool/myThreadPool.sln
->>>>>>> simpleFTP
