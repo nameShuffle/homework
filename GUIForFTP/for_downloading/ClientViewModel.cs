@@ -1,42 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows.Threading;
-
-namespace GUIForFTP
-{
-    /// <summary>
-    /// ViewModel для работы с формой клиента.
-    /// </summary>
-    class ClientViewModel : INotifyPropertyChanged
-    {
-        private string currentDirectory;
-        private string finalDirectory;
-        
-        private Client client = new Client();
-
-        public ObservableCollection<ObjectInfo> Objects { get; private set; } = new ObservableCollection<ObjectInfo>();
-        public ObservableCollection<string> DownloadList { get; private set; } = new ObservableCollection<string>();
-
-        private string warning;
-
-        public string Warning { get => warning;
-            private set {
-                warning = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
-            }
-        }
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Отправляет начальный запрос от клиента с просьбой вернуть список
-        /// объектов в директории homework.
-        /// </summary>
-        public async Task StartConnection(int port, string address)
+c Task StartConnection(int port, string addres)
         {
             var connectionCommand = "startconnection";
             try
@@ -44,19 +6,20 @@ namespace GUIForFTP
                 this.Warning = "";
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
 
-                var dirFromServer = await Task.Run(() => client.GetDirectoryList(port, address, connectionCommand));
+                var dirFromServer = await Task.Run(() => client.GetDirectoryList(port, addres, connectionCommand));
 
                 this.currentDirectory = dirFromServer;
                 this.finalDirectory = dirFromServer;
 
                 var command = $"1 {dirFromServer}";
-                var response = await Task.Run(() => client.GetDirectoryList(port, address, command));
+                var response = await Task.Run(() => client.GetDirectoryList(port, addres, command));
 
                 SetInfoToListOfObjects(response);
             }
             catch (Exception ex)
             {
                 this.Warning = ex.Message;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
             }
         }
 
@@ -77,6 +40,7 @@ namespace GUIForFTP
             catch (Exception ex)
             {
                 this.Warning = ex.Message;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
             }
         }
 
@@ -135,6 +99,7 @@ namespace GUIForFTP
             catch (Exception ex)
             {
                 this.Warning = ex.Message;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
             }
         }
 
