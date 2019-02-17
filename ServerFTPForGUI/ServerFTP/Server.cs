@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ServerFTP
@@ -18,8 +18,10 @@ namespace ServerFTP
         /// в котором выполняется обработка запросов, поступающих с клиента.
         /// </summary>
         /// <param name="port">Номер порта.</param>
-        public async Task Work(int port)
+        public async Task Work()
         {
+            int port = 5555;
+
             var listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
 
@@ -37,34 +39,44 @@ namespace ServerFTP
         /// </summary>
         private async void ManageRequest(Socket socket)
         {
-            var stream = new NetworkStream(socket);
-
-            var reader = new StreamReader(stream);
-
-            var request = await reader.ReadLineAsync();
-
-            var writer = new StreamWriter(stream);
-
-            if (request[0] != '1' && request[0] != '2')
+            //var stream = new NetworkStream(socket);
+            using (var stream = new NetworkStream(socket))
             {
-                await writer.WriteAsync("Неверный формат команды");
-                await writer.FlushAsync();
+                var reader = new StreamReader(stream);
+                var writer = new StreamWriter(stream);
+
+                var request = await reader.ReadLineAsync();
+
+                if (request == "startconnection")
+                {
+                    var dir = (new DirectoryInfo(Directory.GetCurrentDirectory())).Parent.Parent.Parent.Parent;
+                    await writer.WriteAsync(dir.FullName);
+                    await writer.FlushAsync();
+                    socket.Close();
+                    return;
+                }
+
+                if (request[0] != '1' && request[0] != '2')
+                {
+                    await writer.WriteAsync("Неверный формат команды");
+                    await writer.FlushAsync();
+                    socket.Close();
+                    return;
+                }
+
+                if (request[0] == '1')
+                {
+                    var dirPath = request.Substring(2);
+                    GetListOfFiles(dirPath, writer);
+                }
+                else
+                {
+                    var filePath = request.Substring(2);
+                    GetFileContent(filePath, writer, stream);
+                }
+
                 socket.Close();
-                return;
             }
-
-            if (request[0] == '1')
-            {
-                var dirPath = request.Substring(2);
-                GetListOfFiles(dirPath, writer);
-            }
-            else
-            {
-                var filePath = request.Substring(2);
-                GetFileContent(filePath, writer);
-            }
-
-            socket.Close();
         }
 
         /// <summary>
@@ -75,25 +87,27 @@ namespace ServerFTP
         /// </summary>
         /// <param name="filePath">Путь к файлу.</param>
         /// <param name="writer">Позволяет записывать данные в нужный поток.</param>
-        private async void GetFileContent(string filePath, StreamWriter writer)
+        private async void GetFileContent(string filePath, StreamWriter writer, NetworkStream stream)
         {
             try
             {
                 if (!File.Exists(filePath))
                 {
-                    await writer.WriteAsync("-1");
+                    await writer.WriteLineAsync("-1");
                     await writer.FlushAsync();
                     return;
                 }
 
-                byte[] content = File.ReadAllBytes(filePath);
-                long length = content.Length;
-                await writer.WriteAsync(length.ToString() + ' ' + Encoding.UTF8.GetString(content));
-                await writer.FlushAsync();
+                var fileLength = (new FileInfo(filePath)).Length;
+                await writer.WriteLineAsync(fileLength.ToString());
+                using (FileStream fileStream = File.OpenRead(filePath))
+                {
+                    fileStream.CopyTo(stream);
+                }
             }
-            catch (SocketException ex)
+            catch (ObjectDisposedException)
             {
-                return;
+                Console.WriteLine("Не удается передать информацию. Возможно, разорвано соединение.");
             }
         }
 
@@ -112,7 +126,7 @@ namespace ServerFTP
 
                 if (!dir.Exists)
                 {
-                    await writer.WriteAsync("-1");
+                    await writer.WriteLineAsync("-1");
                     await writer.FlushAsync();
                     return;
                 }
@@ -126,19 +140,19 @@ namespace ServerFTP
 
                 foreach (var subDir in directorysList)
                 {
-                    answer += $" {subDir.Name} - true ";
+                    answer += $"\n{subDir.Name}\ntrue";
                 }
 
                 foreach (var file in filesList)
                 {
-                    answer += $" {file.Name} - false ";
+                    answer += $"\n{file.Name}\nfalse";
                 }
                 await writer.WriteAsync(answer);
                 await writer.FlushAsync();
             }
-            catch
+            catch (ObjectDisposedException)
             {
-                return;
+                Console.WriteLine("Не удается передать информацию. Возможно, разорвано соединение.");
             }
             
         }
