@@ -1,5 +1,5 @@
     
-    version: 1.0.{build}
+version: 1.0.{build}
 
 image: Visual Studio 2017
       
@@ -16,7 +16,11 @@ for:
 
   before_build:
     - cmd: nuget restore Lazy/Lazy.sln
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> simpleFTP
   build_script:
     - msbuild Lazy/Lazy.sln
 
@@ -38,7 +42,6 @@ for:
   branches:
     only:
       - myThreadPool
-      
   
   environment:
       matrix:
@@ -48,4 +51,8 @@ for:
     - cmd: nuget restore myThreadPool/myThreadPool.sln
 
   build_script:
+<<<<<<< HEAD
     - msbuild myThreadPool/myThreadPool.sln
+=======
+    - msbuild myThreadPool/myThreadPool.sln
+>>>>>>> simpleFTP
