@@ -1,4 +1,4 @@
-﻿namespace Factorial.AssemblyInfo
+﻿namespace Homework1.AssemblyInfo
 
 open System.Reflection
 open System.Runtime.CompilerServices
@@ -7,11 +7,11 @@ open System.Runtime.InteropServices
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[<assembly: AssemblyTitle("Factorial")>]
+[<assembly: AssemblyTitle("Homework1")>]
 [<assembly: AssemblyDescription("")>]
 [<assembly: AssemblyConfiguration("")>]
 [<assembly: AssemblyCompany("Hewlett-Packard")>]
-[<assembly: AssemblyProduct("Factorial")>]
+[<assembly: AssemblyProduct("Homework1")>]
 [<assembly: AssemblyCopyright("Copyright © Hewlett-Packard 2019")>]
 [<assembly: AssemblyTrademark("")>]
 [<assembly: AssemblyCulture("")>]
@@ -22,7 +22,7 @@ open System.Runtime.InteropServices
 [<assembly: ComVisible(false)>]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[<assembly: Guid("2824e2fe-a4a0-496d-a621-701d6c119182")>]
+[<assembly: Guid("8576e845-a950-4e12-bcdc-53c07279f675")>]
 
 // Version information for an assembly consists of the following four values:
 //

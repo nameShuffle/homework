@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Factorial", "Factorial\Factorial.fsproj", "{2824E2FE-A4A0-496D-A621-701D6C119182}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Homework1", "Homework1\Homework1.fsproj", "{8576E845-A950-4E12-BCDC-53C07279F675}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2824E2FE-A4A0-496D-A621-701D6C119182}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2824E2FE-A4A0-496D-A621-701D6C119182}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2824E2FE-A4A0-496D-A621-701D6C119182}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2824E2FE-A4A0-496D-A621-701D6C119182}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8576E845-A950-4E12-BCDC-53C07279F675}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8576E845-A950-4E12-BCDC-53C07279F675}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8576E845-A950-4E12-BCDC-53C07279F675}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8576E845-A950-4E12-BCDC-53C07279F675}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {123A7DCE-83B3-481F-B5D3-D7FB98F710DD}
+		SolutionGuid = {3793431A-6218-41D0-A13A-8A5448460B52}
 	EndGlobalSection
 EndGlobal
