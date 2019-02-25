@@ -42,11 +42,8 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Library1.fs" />
     <Content Include="packages.config" />
-    <None Include="factorial.fsx" />
-    <None Include="fib.fsx" />
-    <None Include="reverseList.fsx" />
+    <None Include="tasks.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
