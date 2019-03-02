@@ -36,3 +36,18 @@ module ``Tests for Palindrome Task`` =
     [<Test>]
     let ``isPalindrome should return false for not palindrome string`` () =
         isPalindrome "hello my name is Dan" |> should be False
+
+module ``Test for Mergesort`` =
+    open Mergesort
+
+    [<Test>]
+    let ``sorting a list of five elements`` () =
+        mergesort [4;1;3;5;2] |> should equal [1;2;3;4;5]
+    
+    [<Test>]
+    let ``an empty list after sorting should be an empty list`` () =
+        mergesort [] |> should equal []
+
+    [<Test>]
+    let ``sort already sorted list`` () =
+        mergesort ['a';'b';'c'] |> should equal ['a';'b';'c']
