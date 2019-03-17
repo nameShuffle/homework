@@ -21,4 +21,6 @@
     <ProjectReference Include="..\Homework3\Homework3.fsproj" />
   </ItemGroup>
 
+  <IsTestProject>true<IsTestProject>
+  
 </Project>
