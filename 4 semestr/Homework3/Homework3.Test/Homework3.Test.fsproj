@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+	<IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Homework3\Homework3.fsproj" />
   </ItemGroup>
-
-  <IsTestProject>true<IsTestProject>
+  
   
 </Project>
