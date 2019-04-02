@@ -1,0 +1,24 @@
+\documentclass[a4paper,12pt,twoside]{article}
+\usepackage[russian]{babel}
+\usepackage[utf8]{inputenc}
+ 
+\begin{document}
+
+\begin{large} \textit{Задание 1.} Выполнить бета-редукцию $\lambda$-терма.\end{large} 
+\newline
+
+$((\lambda a.(\lambda b.b\;b)\;(\lambda b.b\;b))\;b)\;((\lambda c.(c\;b))\;(\lambda a.a)) \longrightarrow_{\beta} (\lambda b.b\;b)\;(\lambda b.b\;b)\;((\lambda c.(c\;b)\;(\lambda a.a))\longrightarrow_{\beta} (\lambda b.b\;b)\;(\lambda b.b\;b)\;((\lambda a.a)\;b) \longrightarrow_{\beta} (\lambda b.b\;b)\;(\lambda b.b\;b)\;b \longrightarrow_{\beta} (\lambda b.b\;b)\;(\lambda b.b\;b)\;b \longrightarrow_{\beta}~...$
+\newline 
+
+Данное $\lambda$-выражение не имеет нормальной формы.
+\newline
+
+\begin{large} \textit{Задание 2.} Доказать, что  S K K = I. \end{large} 
+\newline
+
+$S\;K\;K\;=\;(\lambda x\;y\;z.x\;z\;(y\;z))\;(\lambda x\;y.x)\;(\lambda x\;y.x) \longrightarrow_{\beta} \lambda z.(\lambda x\;y.x)\;z\;((\lambda x\;y.x)\;z) \longrightarrow_{\beta} \lambda z.(\lambda y.z)\;(\lambda y.z) \longrightarrow_{\beta} \lambda z.z\;=\;I$
+
+
+
+
+\end{document}
