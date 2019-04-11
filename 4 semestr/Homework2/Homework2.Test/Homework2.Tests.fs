@@ -12,7 +12,7 @@ module ``Tests for FindElement Task`` =
     
     [<Test>]
     let ``the function should return None for a list without element`` () =
-        firstPosition 'd' ['a';'b';'c'] |> should equal None
+        firstPosition 'd' ['a'; 'b'; 'c'] |> should equal None
 
     [<Test>]
     let ``first position of 'c' should be 2`` () =
