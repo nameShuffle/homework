@@ -104,8 +104,8 @@ let phoneBook =
             let fileName = Console.ReadLine()
             let info = readInfoFromFile fileName book
             match info with
-            | Some newBook -> printfn "Info from file was added"; phoneBookAction newBook
-            | None -> printfn "There if no such file"; phoneBookAction book
+            | Some newBook -> printfn "Info from file was added."; phoneBookAction newBook
+            | None -> printfn "There is no such file."; phoneBookAction book
         else if command = "exit" then 0 
         else 
             printfn "incorrect command"

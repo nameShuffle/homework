@@ -20,12 +20,12 @@ let brackets string =
                         handleString tail tailBrackets
                     else if headBrackets = '[' && head = ']' then 
                         handleString tail tailBrackets
-                    else "последовательность скобок не корректна"
-                | _ -> "последовательность скобок не корректна"
+                    else false
+                | _ -> false
             else handleString tail listOfOpenBrackets
         | _ -> 
             match listOfOpenBrackets with 
-            | head :: tail -> "последовательность скобок не корректна"
-            | _ -> "последовательность скобок корректна"
+            | head :: tail -> false
+            | _ -> true
 
     handleString stringInList []
