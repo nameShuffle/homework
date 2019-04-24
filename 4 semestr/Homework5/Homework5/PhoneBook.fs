@@ -61,14 +61,15 @@ let phoneBook =
     let rec phoneBookAction book = 
         printf "New command: "
         let command = Console.ReadLine()
-        if command = "add" then
+        match command with 
+        | "add" ->
             printf "Name: "
             let name = Console.ReadLine()
             printf "Phone: "
             let phone = Console.ReadLine()
 
             phoneBookAction (addPersonToBook name phone book)
-        else if command = "search by name" then
+        | "search by name" ->
             printf "Name: "
             let nameToSearch = Console.ReadLine()
             let info = findPersonByName nameToSearch book
@@ -77,7 +78,7 @@ let phoneBook =
             | None -> printfn "There is no such person in the book."
             
             phoneBookAction book
-        else if command = "search by phone" then
+        | "search by phone" ->
             printf "Phone: "
             let phoneToSearch = Console.ReadLine()
             let info = findPersonByPhone phoneToSearch book
@@ -86,28 +87,28 @@ let phoneBook =
             | None -> printfn "There is no such phone in the book."
             
             phoneBookAction book
-        else if command = "show all" then
+        | "show all" ->
             List.iter (fun person -> 
                 printf "%s " person.Name 
                 printfn "%s" person.Phone) book
             
             phoneBookAction book
-        else if command ="save to file" then
+        | "save to file" -> 
             printf "File name: "
             let fileName = Console.ReadLine()
-            writeInfoToFile fileName
+            writeInfoToFile fileName book
 
             printfn "Info was writen to file."
             phoneBookAction book
-        else if command = "get from file" then
+        | "get from file" ->
             printf "File name: "
             let fileName = Console.ReadLine()
             let info = readInfoFromFile fileName book
             match info with
             | Some newBook -> printfn "Info from file was added."; phoneBookAction newBook
             | None -> printfn "There is no such file."; phoneBookAction book
-        else if command = "exit" then 0 
-        else 
+        | "exit" -> 0 
+        | _ -> 
             printfn "incorrect command"
             phoneBookAction book
 

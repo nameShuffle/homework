@@ -1,10 +1,7 @@
-﻿// Learn more about F# at http://fsharp.org
-
-open System
-open PhoneBook
+﻿open PhoneBook
 
 [<EntryPoint>]
 let main argv =
-    printfn "Hello World from F#!"
+    printfn "Запуск телефонной книги!"
     phoneBook
-    0 // return an integer exit code
+    0 
