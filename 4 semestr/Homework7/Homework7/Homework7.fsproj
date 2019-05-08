@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="CalculateString.fs" />
+    <Compile Include="Rounding.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+</Project>
