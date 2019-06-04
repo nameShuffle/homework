@@ -44,7 +44,7 @@ module Network =
                     for idConnected in 0 .. (id - 1) do
                         if net.[id].[idConnected] = 1 then 
                             let chance = random.Next(0, 100)
-                            if chance <= computers.[idConnected].OS.Chance then
+                            if chance < computers.[idConnected].OS.Chance then
                                 infectedList <- computers.[idConnected] :: infectedList 
             for computer in infectedList do
                 computer.IsInfected <- true
