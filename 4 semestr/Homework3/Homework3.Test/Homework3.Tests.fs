@@ -21,28 +21,28 @@ module ``Tests for EvenNumbers Task`` =
     
     [<Test>]
     let ``evenNumbers1 should return zero for a list without even elements`` () =
-        evenNumbers1 [1;3;5] |> should equal 0
+        evenNumbers1 [1; 3; 5] |> should equal 0
 
     [<Test>]
     let ``evenNumbers2 should return zero for a list without even elements`` () =
-        evenNumbers2 [1;3;5] |> should equal 0
+        evenNumbers2 [1; 3; 5] |> should equal 0
 
     [<Test>]
     let ``evenNumbers3 should return zero for a list without even elements`` () =
-        evenNumbers3 [1;3;5] |> should equal 0
+        evenNumbers3 [1; 3; 5] |> should equal 0
 
 
     [<Test>]
     let ``evenNumbers1 should return 2 for this list`` () =
-        evenNumbers1 [1;2;4] |> should equal 2
+        evenNumbers1 [1; 2; 4] |> should equal 2
 
     [<Test>]
     let ``evenNumbers2 should return 2 for this list`` () =
-        evenNumbers2 [1;2;4] |> should equal 2
+        evenNumbers2 [1; 2; 4] |> should equal 2
 
     [<Test>]
     let ``evenNumbers3 should return 2 for this list`` () =
-        evenNumbers3 [1;2;4] |> should equal 2
+        evenNumbers3 [1; 2; 4] |> should equal 2
     
 module ``Tests for MapWithTrees Task`` =
     open BinaryTree
@@ -64,31 +64,37 @@ module ``Tests for MapWithTrees Task`` =
         mapWithTree addOne tree |> should equal resultTree
 
 module ``Tests for CalculateParseTree Task`` =
-    open BinaryTree
+    open CalculateTree
 
     [<Test>]
-    let ``the function should return None for an empty tree`` () =
-        calculateParseTree Null |> should equal None
+    let ``test add`` () =
+        let tree = Add(Value(5.0), Value(5.0))
+        calculateParseTree tree |> should equal 10
+    
+    [<Test>]
+    let ``test subtrarct`` () =
+        let tree = Subtract(Value(5.0), Value(3.0))
+        calculateParseTree tree |> should equal 2
 
     [<Test>]
-    let ``the function should return None for an invalid tree`` () =
-        let tree = Tree("+", Tree("5", Null, Null), Null)
-        calculateParseTree tree |> should equal None
-    
+    let ``test divide`` () =
+        let tree = Divide(Value(6.0), Value(3.0))
+        calculateParseTree tree |> should equal 2
+
     [<Test>]
-    let ``the function should return None for a tree with invalid types`` () =
-        let tree = Tree("+", Tree("a", Null, Null), Tree("b", Null, Null))
-        calculateParseTree tree |> should equal None
-    
+    let ``test multiply`` () =
+        let tree = Multiply(Value(5.0), Value(3.0))
+        calculateParseTree tree |> should equal 15
+
     [<Test>]
     let ``the function should return inf for a tree with devidin by zero`` () =
-        let tree = Tree("/", Tree("5", Null, Null), Tree("0", Null, Null))
-        Option.get(calculateParseTree tree) |> should equal infinity
+        let tree = Divide(Value(5.0), Value(0.0))
+        calculateParseTree tree |> should equal infinity
 
     [<Test>]
-    let ``the function should return 100 for the tree`` () =
-        let tree = Tree("*", Tree("5", Null, Null), Tree("20", Null, Null))
-        Option.get(calculateParseTree tree) |> should equal 100 
+    let ``the function should return 30 for the complex tree`` () =
+        let tree = Multiply(Add(Value(5.0), Value(10.0)), Value(2.0))
+        calculateParseTree tree |> should equal 30
 
 module ``Tests for PrimeNumbers Task`` =
     open PrimeNumbers
