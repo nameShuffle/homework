@@ -3,60 +3,59 @@
 open System
 open System.IO
 
-///Тип для удобства хранения информации в записной книжке. Один объект соответсвует одному человеку.
-///Каждый человек имеет свой номер телефона и свое имя.
+/// Тип для удобства хранения информации в записной книжке. Один объект соответсвует одному человеку.
+/// Каждый человек имеет свой номер телефона и свое имя.
 type Person = 
    { Name : string
      Phone : string }
 
-///Ниже записаны функции для отдельных команд по работе с телефонным справочником.
-///Вынесены для удобства тестирования программы.
+/// Функции для отдельных команд по работе с телефонным справочником.
+/// Вынесены для удобства тестирования программы.
 
-///Добавление нового человека в список. Возвращает новый список.
+/// Добавление нового человека в список. Возвращает новый список.
 let addPersonToBook name phone book = 
     { Name = name; Phone = phone} :: book
 
-///Поиск человека по имени. Функция возвращает найденного человека.
+/// Поиск человека по имени. Функция возвращает найденного человека.
 let findPersonByName nameToSearch book = 
     List.tryFind (fun person -> person.Name = nameToSearch) book
 
-///Поиск человека по номеру телефона. Функция возвращает найденного человека.
+/// Поиск человека по номеру телефона. Функция возвращает найденного человека.
 let findPersonByPhone phoneToSearch book =
     List.tryFind (fun person -> person.Phone = phoneToSearch) book
 
-///Запись содержимое списка нужного формата в файл по указанному имени.
+/// Запись содержимое списка нужного формата в файл по указанному имени.
 let writeInfoToFile fileName book =
-    let writer = File.CreateText fileName 
+    use writer = File.CreateText fileName 
     List.iter (fun person -> 
         fprintfn writer "%s" person.Name 
         fprintfn writer "%s" person.Phone) book
-    writer.Close()
 
-///Чтение информации о людях в нужном формате из файла. Информация добавляется к уже имеющемуся списку,
-///функция возвращает готовый список.
+/// Чтение информации о людях в нужном формате из файла. Информация добавляется к уже имеющемуся списку,
+/// функция возвращает готовый список.
 let readInfoFromFile fileName book = 
     let rec readPersonsInfoFromFile (reader : StreamReader) currentList = 
         match reader.ReadLine() with
-        | null -> reader.Close(); currentList 
+        | null -> currentList 
         | name -> 
             let phone = reader.ReadLine()
             let newPerson = { Name = name; Phone = phone}
             readPersonsInfoFromFile reader (newPerson :: currentList)
     if File.Exists fileName then
-        let reader = File.OpenText fileName
+        use reader = File.OpenText fileName
         Some (readPersonsInfoFromFile reader book)
     else
         None
 
-///Непосредственно реализация программы-телефонного справочника. Выполняет команды в интерактивном режиме.
-///Выводит приглашение на ввод в консоль. Реализованы следующие команды:
-/// - "add" - добавление нового человека в справочник.
-/// - "search by name" - поиск нужного человека по имени.
-/// - "search by phone" - поиск нужного человека по номеру телефона.
-/// - "show all" - вывод на консоль данные всех имеющихся в справочнике людей.
-/// - "save to file" - сохрание в файл текущего содержимого справочника.
-/// - "get from file" - получение информации из файла и запись ее в справочник.
-///Остальные команды считаются некорректными и игнорируются.
+/// Непосредственно реализация программы-телефонного справочника. Выполняет команды в интерактивном режиме.
+/// Выводит приглашение на ввод в консоль. Реализованы следующие команды:
+///  - "add" - добавление нового человека в справочник.
+///  - "search by name" - поиск нужного человека по имени.
+///  - "search by phone" - поиск нужного человека по номеру телефона.
+///  - "show all" - вывод на консоль данные всех имеющихся в справочнике людей.
+///  - "save to file" - сохрание в файл текущего содержимого справочника.
+///  - "get from file" - получение информации из файла и запись ее в справочник.
+/// Остальные команды считаются некорректными и игнорируются.
 let phoneBook = 
     let rec phoneBookAction book = 
         printf "New command: "
@@ -74,7 +73,7 @@ let phoneBook =
             let nameToSearch = Console.ReadLine()
             let info = findPersonByName nameToSearch book
             match info with
-            | Some person -> printfn "Founded phone %s" person.Phone
+            | Some person -> printfn "Found phone %s" person.Phone
             | None -> printfn "There is no such person in the book."
             
             phoneBookAction book
