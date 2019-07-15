@@ -16,7 +16,7 @@ module ``Tests for Rounding task`` =
                 let! b = 3.5
                 return a / b
             }
-        result |> should equal 0.048
+        result |> should (equalWithin 0.0001) 0.048
 
     [<Test>]
     let ``round to 5`` () =
@@ -26,7 +26,7 @@ module ``Tests for Rounding task`` =
                 let! b = 3.5
                 return a / b
             }
-        result |> should equal 0.04762
+        result |> should (equalWithin 0.000001) 0.04762
 
     [<Test>]
     let ``round to 0`` () =
@@ -36,4 +36,4 @@ module ``Tests for Rounding task`` =
                 let! b = 3.5
                 return a / b
             }
-        result |> should equal 3
+        result |> should (equalWithin 0.1) 3
