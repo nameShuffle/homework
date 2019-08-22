@@ -1,10 +1,10 @@
 image: Visual Studio 2017
 
-before_build:
-    - nuget restore "4 semestr/Homework5/Homework5.sln"
+before_build:]
+    - nuget restore "4 semestr/Homework7/Homework7.sln"
     
 build:
-    project: "4 semestr/Homework5/Homework5.sln"
+    project: "4 semestr/Homework7/Homework7.sln"
     
 test_script:
-    - dotnet test "4 semestr/Homework5/Homework5.sln"
+    - dotnet test "4 semestr/Homework7/Homework7.sln"
