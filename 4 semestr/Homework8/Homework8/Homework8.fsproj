@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Lazy.fs" />
     <Compile Include="CountOfSymbols.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

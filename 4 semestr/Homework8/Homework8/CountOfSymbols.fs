@@ -35,7 +35,7 @@ let checkAllUrls parentUrl =
             let matches = regex.Matches(text)
             let urls = [ for url in matches -> url.Groups.[1].ToString() ]
             ( parentAnswer, urls )
-        | None -> failwith "Проверьте корретность введенных данных"
+        | None -> failwith "Incorrect parent url"
     
     /// Функция расшифровки полученного результата. Выбирает из пары ответ в нужном формате, либо
     /// возвращает сообщение о некорретности url.
@@ -56,5 +56,3 @@ let checkAllUrls parentUrl =
 let printAllAnswers url =
     let result = checkAllUrls url
     List.iter (fun a -> printfn "%s" a) result
-
-printAllAnswers "https://www.google.ru/"
